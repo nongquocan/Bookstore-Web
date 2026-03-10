@@ -1,0 +1,309 @@
+/* CSS cho trang Account */
+
+.account-menu-item {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-gray);
+    border-bottom: 1px solid #e0e0e0;
+    transition: var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account-menu-item:hover {
+    background-color: var(--bg-light);
+    color: var(--primary-color);
+}
+
+.account-menu-item.active {
+    background-color: #fff3e0;
+    color: var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+    padding-left: 16px;
+    font-weight: 600;
+}
+
+.account-menu-item i {
+    font-size: 16px;
+}
+
+
+/* Account content */
+
+.account-content {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* Dashboard cards */
+
+.dashboard-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    transition: var(--transition-base);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card i {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.dashboard-card-label {
+    font-size: 12px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.dashboard-card-value {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+
+/* Orders table */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table thead {
+    background-color: var(--bg-light);
+}
+
+table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dark);
+    border-bottom: 2px solid #ddd;
+}
+
+table td {
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+table tr:hover {
+    background-color: var(--bg-light);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-processing {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.status-pending {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+
+/* Address card */
+
+.address-card {
+    background-color: var(--bg-light);
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    transition: var(--transition-base);
+    position: relative;
+}
+
+.address-card.default {
+    border-color: var(--primary-color);
+    background-color: rgba(211, 47, 47, 0.05);
+}
+
+.address-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.address-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.address-card-name {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.address-card-text {
+    font-size: 14px;
+    color: var(--text-gray);
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.address-card-phone {
+    font-size: 14px;
+    color: var(--text-gray);
+    margin-bottom: 12px;
+}
+
+.address-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.address-card-actions .btn {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+
+/* User info card */
+
+.user-info-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.user-email {
+    font-size: 12px;
+    color: var(--text-gray);
+}
+
+.points-card {
+    background: var(--bg-light);
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.points-label {
+    font-size: 12px;
+    color: var(--text-gray);
+    margin-bottom: 4px;
+}
+
+.points-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .dashboard-card {
+        padding: 16px;
+    }
+    .dashboard-card i {
+        font-size: 24px;
+    }
+    .dashboard-card-value {
+        font-size: 22px;
+    }
+    table {
+        font-size: 13px;
+    }
+    table th,
+    table td {
+        padding: 8px;
+    }
+    .address-card-actions {
+        gap: 4px;
+    }
+}
+
+@media (max-width: 576px) {
+    .user-info-card {
+        gap: 12px;
+    }
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+    .user-name {
+        font-size: 14px;
+    }
+    .user-email {
+        font-size: 11px;
+    }
+    .dashboard-card {
+        padding: 12px;
+    }
+    .dashboard-card-value {
+        font-size: 20px;
+    }
+    table {
+        font-size: 12px;
+    }
+    table th,
+    table td {
+        padding: 6px;
+    }
+    .status-badge {
+        padding: 3px 8px;
+        font-size: 11px;
+    }
+}

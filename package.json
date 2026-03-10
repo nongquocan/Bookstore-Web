@@ -1,0 +1,32 @@
+{
+    "name": "bookstore-website",
+    "version": "1.0.0",
+    "description": "Modern e-commerce website for selling books - B2C Platform",
+    "main": "index.html",
+    "scripts": {
+        "start": "http-server",
+        "dev": "http-server -p 8000",
+        "serve": "python -m http.server 8000"
+    },
+    "keywords": [
+        "e-commerce",
+        "bookstore",
+        "online-shopping",
+        "vietnam",
+        "responsive-design",
+        "mobile-first",
+        "html5",
+        "css3",
+        "javascript",
+        "bootstrap5"
+    ],
+    "author": "GitHub Copilot",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yourusername/bookstore-website.git"
+    },
+    "devDependencies": {
+        "http-server": "^14.1.1"
+    }
+}

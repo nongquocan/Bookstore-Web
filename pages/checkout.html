@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Thanh toán - BookStore">
+  <title>Thanh Toán - BookStore</title>
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/checkout.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="navbar">
+        <a href="../index.html" class="logo">
+          <i class="fas fa-book-open"></i>
+          <span>BookStore</span>
+        </a>
+        
+        <div class="search-container">
+          <input type="search" class="search-input" placeholder="Tìm sách...">
+          <div class="search-suggestions"></div>
+        </div>
+        
+        <div class="icon-bar">
+          <a href="login.html" class="icon-item">
+            <i class="fas fa-user"></i>
+          </a>
+          <a href="cart.html" class="icon-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-badge" style="display: none;">0</span>
+          </a>
+          <a href="account.html" class="icon-item">
+            <i class="fas fa-cog"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main role="main">
+    <div class="container">
+      <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 30px;">Thanh Toán</h1>
+
+      <!-- Checkout Steps -->
+      <div style="display: flex; justify-content: space-between; margin-bottom: 40px; position: relative;">
+        <div style="position: absolute; top: 20px; left: 0; right: 0; height: 2px; background: #e0e0e0; z-index: 1;"></div>
+        
+        <div class="checkout-step active">
+          <div class="step-circle">1</div>
+          <p>Địa chỉ giao hàng</p>
+        </div>
+        <div class="checkout-step">
+          <div class="step-circle">2</div>
+          <p>Phương thức vận chuyển</p>
+        </div>
+        <div class="checkout-step">
+          <div class="step-circle">3</div>
+          <p>Phương thức thanh toán</p>
+        </div>
+      </div>
+
+      <div class="row" style="gap: 30px;">
+        <!-- Left: Forms -->
+        <div class="col" style="flex: 2;">
+          <!-- Step 1: Shipping Address -->
+          <div class="checkout-section active" id="step1">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">
+              <i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng
+            </h2>
+
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Họ và tên *</label>
+                  <input type="text" value="Nguyễn Văn A" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Số điện thoại *</label>
+                  <input type="tel" value="0912345678" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Email *</label>
+                <input type="email" value="email@example.com" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Tỉnh/Thành phố *</label>
+                  <select style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option>TP. Hồ Chí Minh</option>
+                    <option>Hà Nội</option>
+                    <option>Đà Nẵng</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Quận/Huyện *</label>
+                  <select style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option>Quận 1</option>
+                    <option>Quận 2</option>
+                    <option>Quận 3</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Phường/Xã *</label>
+                  <select style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option>Bến Nghé</option>
+                    <option>Bến Thành</option>
+                    <option>Nguyễn Hữu Cảnh</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Địa chỉ cụ thể *</label>
+                <input type="text" value="123 Đường Lê Lợi, Phường Bến Thành" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px;">
+              </div>
+
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" checked>
+                <span>Sử dụng địa chỉ này làm địa chỉ mặc định</span>
+              </label>
+            </div>
+
+            <button onclick="nextStep()" class="btn btn-primary" style="margin-top: 20px; padding: 12px 30px;">
+              Tiếp tục - Phương thức vận chuyển <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- Step 2: Shipping Method -->
+          <div class="checkout-section" id="step2" style="display: none;">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">
+              <i class="fas fa-truck"></i> Phương thức vận chuyển
+            </h2>
+
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+              <label style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #d32f2f; border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
+                <input type="radio" name="shipping" value="standard" checked>
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; margin-bottom: 4px;">Vận chuyển tiêu chuẩn</div>
+                  <div style="font-size: 12px; color: #666;">Giao hàng trong 3-5 ngày</div>
+                </div>
+                <div style="color: #d32f2f; font-weight: 600; font-size: 16px;">30.000 VNĐ</div>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
+                <input type="radio" name="shipping" value="express">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; margin-bottom: 4px;">Vận chuyển nhanh</div>
+                  <div style="font-size: 12px; color: #666;">Giao hàng trong 1-2 ngày</div>
+                </div>
+                <div style="color: #d32f2f; font-weight: 600; font-size: 16px;">60.000 VNĐ</div>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                <input type="radio" name="shipping" value="sameday">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; margin-bottom: 4px;">Giao hàng cùng ngày</div>
+                  <div style="font-size: 12px; color: #666;">Giao hàng cùng ngày (chỉ TP.HCM)</div>
+                </div>
+                <div style="color: #d32f2f; font-weight: 600; font-size: 16px;">120.000 VNĐ</div>
+              </label>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+              <button onclick="prevStep()" class="btn btn-outline" style="padding: 12px 30px;">
+                <i class="fas fa-arrow-left"></i> Quay lại
+              </button>
+              <button onclick="nextStep()" class="btn btn-primary" style="padding: 12px 30px;">
+                Tiếp tục - Phương thức thanh toán <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Payment Method -->
+          <div class="checkout-section" id="step3" style="display: none;">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">
+              <i class="fas fa-credit-card"></i> Phương thức thanh toán
+            </h2>
+
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+              <label style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #d32f2f; border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
+                <input type="radio" name="payment" value="cod" checked>
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; margin-bottom: 4px;">Thanh toán khi nhận hàng (COD)</div>
+                  <div style="font-size: 12px; color: #666;">Thanh toán tiền mặt khi nhận hàng</div>
+                </div>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
+                <input type="radio" name="payment" value="vnpay">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; margin-bottom: 4px;">
+                    <i class="fas fa-university"></i> VNPay
+                  </div>
+                  <div style="font-size: 12px; color: #666;">Thanh toán qua cổng VNPay</div>
+                </div>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 12px; cursor: pointer;">
+                <input type="radio" name="payment" value="momo">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; margin-bottom: 4px;">
+                    <i class="fas fa-mobile-alt"></i> MoMo
+                  </div>
+                  <div style="font-size: 12px; color: #666;">Thanh toán qua ứng dụng MoMo</div>
+                </div>
+              </label>
+
+              <label style="display: flex; align-items: center; gap: 16px; padding: 16px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                <input type="radio" name="payment" value="card">
+                <div style="flex: 1;">
+                  <div style="font-weight: 600; margin-bottom: 4px;">
+                    <i class="fas fa-credit-card"></i> Visa / Mastercard
+                  </div>
+                  <div style="font-size: 12px; color: #666;">Thanh toán bằng thẻ tín dụng</div>
+                </div>
+              </label>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 20px;">
+              <button onclick="prevStep()" class="btn btn-outline" style="padding: 12px 30px;">
+                <i class="fas fa-arrow-left"></i> Quay lại
+              </button>
+              <button onclick="completeOrder()" class="btn btn-primary" style="padding: 12px 30px; flex: 1;">
+                <i class="fas fa-check-circle"></i> Hoàn tất đơn hàng
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="col" style="flex: 1;">
+          <div style="background: white; padding: 20px; border-radius: 8px; position: sticky; top: 100px;">
+            <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 20px;">Đơn hàng của bạn</h2>
+
+            <div id="orderItems" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
+              <!-- Items will be populated here -->
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+              <span>Tạm tính:</span>
+              <span id="orderSubtotal" style="font-weight: 600;">0₫</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e0e0e0;">
+              <span>Vận chuyển:</span>
+              <span id="orderShipping" style="font-weight: 600;">30.000₫</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: #d32f2f;">
+              <span>Tổng cộng:</span>
+              <span id="orderTotal">0₫</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Về BookStore</h3>
+          <p style="margin-bottom: 16px; font-size: 14px;">
+            BookStore là cửa hàng sách trực tuyến hàng đầu Việt Nam.
+          </p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 BookStore.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    let currentStep = 1;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      renderOrderSummary();
+    });
+
+    function renderOrderSummary() {
+      const itemsContainer = document.getElementById('orderItems');
+      itemsContainer.innerHTML = APP.cart.map(item => `
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 90px; object-fit: cover; border-radius: 4px;">
+          <div style="flex: 1;">
+            <p style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">${item.name}</p>
+            <p style="font-size: 12px; color: #666;">x${item.quantity}</p>
+            <p style="font-size: 13px; font-weight: 600; color: #d32f2f;">${APP.formatPrice(item.price * item.quantity)}</p>
+          </div>
+        </div>
+      `).join('');
+
+      updateOrderTotal();
+    }
+
+    function updateOrderTotal() {
+      const subtotal = APP.getCartTotal();
+      const shipping = 30000; // Based on selected method
+      const total = subtotal + shipping;
+
+      document.getElementById('orderSubtotal').textContent = APP.formatPrice(subtotal);
+      document.getElementById('orderShipping').textContent = APP.formatPrice(shipping);
+      document.getElementById('orderTotal').textContent = APP.formatPrice(total);
+    }
+
+    function nextStep() {
+      if (currentStep < 3) {
+        currentStep++;
+        updateSteps();
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        updateSteps();
+      }
+    }
+
+    function updateSteps() {
+      document.querySelectorAll('.checkout-section').forEach(el => el.style.display = 'none');
+      document.getElementById(`step${currentStep}`).style.display = 'block';
+
+      document.querySelectorAll('.checkout-step').forEach((el, i) => {
+        if (i + 1 < currentStep) {
+          el.classList.add('active');
+        } else if (i + 1 === currentStep) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function completeOrder() {
+      const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+      alert('Đơn hàng của bạn đã được đặt!\nPhương thức thanh toán: ' + paymentMethod);
+      // In a real app, this would call a server endpoint
+      APP.cart = [];
+      APP.saveCart();
+      window.location.href = '../index.html';
+    }
+
+    // Style for checkout steps
+    const style = document.createElement('style');
+    style.textContent = `
+      .checkout-step {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+      }
+
+      .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin: 0 auto 12px;
+        font-size: 18px;
+      }
+
+      .checkout-step.active .step-circle {
+        background: #d32f2f;
+        color: white;
+        border-color: #d32f2f;
+      }
+
+      .checkout-step p {
+        font-size: 14px;
+        font-weight: 600;
+        color: #666;
+      }
+
+      .checkout-step.active p {
+        color: #d32f2f;
+      }
+
+      .checkout-section {
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+/* CSS cho trang Checkout */
+
+.checkout-step {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin: 0 auto 12px;
+    font-size: 18px;
+    transition: var(--transition-base);
+}
+
+.checkout-step.active .step-circle {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+}
+
+.checkout-step p {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-gray);
+    margin: 0;
+}
+
+.checkout-step.active p {
+    color: var(--primary-color);
+}
+
+.checkout-section {
+    animation: fadeInUp 0.4s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* Form styling */
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: var(--transition-base);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+}
+
+
+/* Shipping & Payment options */
+
+label[style*="border"] {
+    transition: var(--transition-base);
+    cursor: pointer;
+}
+
+label[style*="border"]:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+label[style*="border"] input[type="radio"],
+label[style*="border"] input[type="checkbox"] {
+    cursor: pointer;
+}
+
+
+/* Address form grid */
+
+.address-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.address-grid-full {
+    grid-column: 1 / -1;
+}
+
+
+/* Responsive */
+
+@media (max-width: 1024px) {
+    .checkout-step {
+        font-size: 14px;
+    }
+    .step-circle {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    .checkout-step p {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .address-grid {
+        grid-template-columns: 1fr;
+    }
+    .row {
+        flex-direction: column !important;
+    }
+    .col {
+        max-width: 100% !important;
+    }
+    .checkout-section {
+        border-radius: 0;
+        margin: 0 -20px;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .step-circle {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        margin: 0 auto 8px;
+    }
+    .checkout-step p {
+        font-size: 11px;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    label[style*="border"] {
+        padding: 12px !important;
+    }
+}

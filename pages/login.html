@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Đăng nhập - BookStore">
+  <title>Đăng Nhập - BookStore</title>
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="navbar">
+        <a href="../index.html" class="logo">
+          <i class="fas fa-book-open"></i>
+          <span>BookStore</span>
+        </a>
+        
+        <div class="search-container">
+          <input type="search" class="search-input" placeholder="Tìm sách...">
+          <div class="search-suggestions"></div>
+        </div>
+        
+        <div class="icon-bar">
+          <a href="cart.html" class="icon-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-badge" style="display: none;">0</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main role="main">
+    <div class="container">
+      <div style="max-width: 900px; margin: 60px auto;">
+        <!-- Tabs -->
+        <div style="display: flex; border-bottom: 2px solid #e0e0e0; margin-bottom: 40px;">
+          <button 
+            class="tab-button" 
+            data-tab="login"
+            style="padding: 15px 30px; font-size: 16px; font-weight: 600; border: none; background: none; cursor: pointer; border-bottom: 3px solid #d32f2f;"
+          >
+            Đăng Nhập
+          </button>
+          <button 
+            class="tab-button" 
+            data-tab="register"
+            style="padding: 15px 30px; font-size: 16px; font-weight: 600; border: none; background: none; cursor: pointer; color: #666;"
+          >
+            Đăng Ký
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+          <!-- Login Form -->
+          <div id="loginForm" class="tab-content">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 25px;">Đăng Nhập Tài Khoản</h2>
+
+            <form onsubmit="handleLogin(event)">
+              <!-- Email/Phone -->
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Email hoặc số điện thoại</label>
+                <input 
+                  type="text" 
+                  id="loginEmail"
+                  placeholder="Nhập email hoặc số điện thoại"
+                  style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                  required
+                >
+              </div>
+
+              <!-- Password -->
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Mật khẩu</label>
+                <input 
+                  type="password" 
+                  id="loginPassword"
+                  placeholder="Nhập mật khẩu"
+                  style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                  required
+                >
+              </div>
+
+              <!-- Remember & Forgot -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                  <input type="checkbox" id="rememberMe">
+                  <span style="font-size: 14px;">Ghi nhớ tôi</span>
+                </label>
+                <a href="#" style="color: #d32f2f; text-decoration: none; font-size: 14px;">Quên mật khẩu?</a>
+              </div>
+
+              <!-- Submit -->
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
+                Đăng Nhập
+              </button>
+            </form>
+
+            <!-- Social Login -->
+            <div style="margin-top: 30px;">
+              <div style="text-align: center; margin-bottom: 20px; position: relative;">
+                <span style="background: white; padding: 0 12px; position: relative; z-index: 1; color: #666;">Hoặc</span>
+                <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #e0e0e0; z-index: 0;"></div>
+              </div>
+
+              <button class="btn" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; margin-bottom: 12px;">
+                <i class="fab fa-google" style="color: #db4437; margin-right: 8px;"></i>
+                <span>Đăng nhập với Google</span>
+              </button>
+
+              <button class="btn" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0;">
+                <i class="fab fa-facebook-f" style="color: #1877f2; margin-right: 8px;"></i>
+                <span>Đăng nhập với Facebook</span>
+              </button>
+            </div>
+
+            <!-- Register Link -->
+            <p style="text-align: center; margin-top: 30px; color: #666;">
+              Bạn chưa có tài khoản?
+              <button 
+                type="button"
+                onclick="switchTab('register')"
+                style="background: none; border: none; color: #d32f2f; font-weight: 600; cursor: pointer;"
+              >
+                Đăng ký ngay
+              </button>
+            </p>
+          </div>
+
+          <!-- Register Form -->
+          <div id="registerForm" class="tab-content" style="display: none;">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 25px;">Tạo Tài Khoản</h2>
+
+            <form onsubmit="handleRegister(event)">
+              <!-- Email -->
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Email</label>
+                <input 
+                  type="email" 
+                  id="registerEmail"
+                  placeholder="Nhập email"
+                  style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                  required
+                >
+              </div>
+
+              <!-- Phone -->
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Số điện thoại</label>
+                <input 
+                  type="tel" 
+                  id="registerPhone"
+                  placeholder="Nhập số điện thoại"
+                  style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                  required
+                >
+              </div>
+
+              <!-- Password -->
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Mật khẩu</label>
+                <input 
+                  type="password" 
+                  id="registerPassword"
+                  placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
+                  style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                  required
+                  minlength="6"
+                >
+              </div>
+
+              <!-- Confirm Password -->
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Xác nhận mật khẩu</label>
+                <input 
+                  type="password" 
+                  id="registerConfirm"
+                  placeholder="Nhập lại mật khẩu"
+                  style="width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                  required
+                >
+              </div>
+
+              <!-- Terms -->
+              <label style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 25px; cursor: pointer;">
+                <input type="checkbox" id="terms" style="margin-top: 4px;" required>
+                <span style="font-size: 13px;">
+                  Tôi đồng ý với 
+                  <a href="#" style="color: #d32f2f; text-decoration: none;">Điều khoản dịch vụ</a> 
+                  và 
+                  <a href="#" style="color: #d32f2f; text-decoration: none;">Chính sách bảo mật</a>
+                </span>
+              </label>
+
+              <!-- Submit -->
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">
+                Đăng Ký
+              </button>
+            </form>
+
+            <!-- Login Link -->
+            <p style="text-align: center; margin-top: 30px; color: #666;">
+              Bạn đã có tài khoản?
+              <button 
+                type="button"
+                onclick="switchTab('login')"
+                style="background: none; border: none; color: #d32f2f; font-weight: 600; cursor: pointer;"
+              >
+                Đăng nhập
+              </button>
+            </p>
+          </div>
+
+          <!-- Benefits -->
+          <div style="background: #f5f5f5; padding: 30px; border-radius: 8px;">
+            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px;">Lợi ích khi đăng ký</h3>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+              <i class="fas fa-check-circle" style="font-size: 24px; color: #27ae60; flex-shrink: 0;"></i>
+              <div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Nhanh chóng & Tiện lợi</div>
+                <p style="font-size: 13px; color: #666;">Lưu thông tin để checkout nhanh hơn</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+              <i class="fas fa-gift" style="font-size: 24px; color: #f57c00; flex-shrink: 0;"></i>
+              <div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Khuyến Mãi & Ưu Đãi</div>
+                <p style="font-size: 13px; color: #666;">Nhận ưu đãi độc quyền cho thành viên</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+              <i class="fas fa-heart" style="font-size: 24px; color: #d32f2f; flex-shrink: 0;"></i>
+              <div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Wishlist</div>
+                <p style="font-size: 13px; color: #666;">Lưu sách yêu thích để mua sau</p>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 15px;">
+              <i class="fas fa-star" style="font-size: 24px; color: #ffc107; flex-shrink: 0;"></i>
+              <div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Điểm Thưởng</div>
+                <p style="font-size: 13px; color: #666;">Tích điểm mỗi lần mua để đổi quà</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>&copy; 2024 BookStore.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    function switchTab(tabName) {
+      const tabs = document.querySelectorAll('.tab-button');
+      const contents = document.querySelectorAll('.tab-content');
+
+      contents.forEach(content => {
+        content.style.display = 'none';
+      });
+
+      tabs.forEach(tab => {
+        tab.style.borderBottomColor = '#e0e0e0';
+        tab.style.color = '#666';
+      });
+
+      document.getElementById(tabName + 'Form').style.display = 'block';
+      document.querySelector(`[data-tab="${tabName}"]`).style.borderBottomColor = '#d32f2f';
+      document.querySelector(`[data-tab="${tabName}"]`).style.color = '#212121';
+    }
+
+    document.querySelectorAll('.tab-button').forEach(tab => {
+      tab.addEventListener('click', function() {
+        switchTab(this.dataset.tab);
+      });
+    });
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      // Simple validation
+      if (email && password) {
+        APP.showNotification('Đăng nhập thành công!', 'success');
+        localStorage.setItem('currentUser', JSON.stringify({
+          email: email,
+          name: 'Nguyễn Văn A'
+        }));
+        setTimeout(() => {
+          window.location.href = '../index.html';
+        }, 1000);
+      }
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const email = document.getElementById('registerEmail').value;
+      const phone = document.getElementById('registerPhone').value;
+      const password = document.getElementById('registerPassword').value;
+      const confirm = document.getElementById('registerConfirm').value;
+
+      if (password !== confirm) {
+        APP.showNotification('Mật khẩu không khớp!', 'danger');
+        return;
+      }
+
+      APP.showNotification('Đăng ký thành công!', 'success');
+      localStorage.setItem('currentUser', JSON.stringify({
+        email: email,
+        phone: phone,
+        name: email.split('@')[0]
+      }));
+      setTimeout(() => {
+        window.location.href = '../index.html';
+      }, 1000);
+    }
+  </script>
+</body>
+</html>

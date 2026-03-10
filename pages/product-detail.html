@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Chi tiết sản phẩm - BookStore">
+  <title>Chi tiết sản phẩm - BookStore</title>
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container">
+      <div class="navbar">
+        <a href="../index.html" class="logo">
+          <i class="fas fa-book-open"></i>
+          <span>BookStore</span>
+        </a>
+        
+        <div class="search-container">
+          <input 
+            type="search" 
+            class="search-input" 
+            placeholder="Tìm sách, tác giả, thể loại..."
+            aria-label="Tìm kiếm sản phẩm"
+          >
+          <div class="search-suggestions"></div>
+        </div>
+        
+        <div class="icon-bar">
+          <a href="login.html" class="icon-item" title="Đăng nhập">
+            <i class="fas fa-user"></i>
+          </a>
+          <a href="cart.html" class="icon-item" title="Giỏ hàng">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-badge" style="display: none;">0</span>
+          </a>
+          <a href="account.html" class="icon-item" title="Tài khoản">
+            <i class="fas fa-cog"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main role="main">
+    <div class="container">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb mb-3" role="navigation" aria-label="Breadcrumb">
+        <a href="../index.html" class="breadcrumb-item">Trang chủ</a>
+        <a href="products.html" class="breadcrumb-item">Danh mục</a>
+        <span class="breadcrumb-item active" id="breadcrumbProduct">Sản phẩm</span>
+      </nav>
+
+      <!-- Product Details -->
+      <div class="row" id="productDetail">
+        <!-- Image Gallery -->
+        <div class="col" style="max-width: 45%; margin-right: 5%;">
+          <div style="background: white; padding: 20px; border-radius: 8px;">
+            <!-- Main Image -->
+            <div class="product-image-wrapper" style="height: 500px; margin-bottom: 15px;">
+              <img id="mainImage" src="" alt="" class="product-image" style="object-fit: contain;">
+            </div>
+
+            <!-- Thumbnails -->
+            <div style="display: flex; gap: 10px;">
+              <img id="thumb1" src="" alt="" class="product-image" 
+                   style="width: 80px; height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;">
+              <img id="thumb2" src="" alt="" class="product-image" 
+                   style="width: 80px; height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;">
+              <img id="thumb3" src="" alt="" class="product-image" 
+                   style="width: 80px; height: 120px; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col" style="flex: 1;">
+          <div style="background: white; padding: 20px; border-radius: 8px;">
+            <!-- Name & Rating -->
+            <h1 id="productName" style="font-size: 28px; font-weight: 700; margin-bottom: 12px;"></h1>
+            <p id="productAuthor" style="color: #666; font-size: 16px; margin-bottom: 16px;"></p>
+
+            <!-- Rating & Reviews -->
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
+              <div style="display: flex; gap: 4px;">
+                <span id="productRating" style="font-size: 18px; font-weight: 700; margin-right: 8px;"></span>
+                <span id="productStars" style="color: #ffc107;"></span>
+              </div>
+              <span style="color: #666; font-size: 14px;">(<span id="productReviews">0</span> đánh giá)</span>
+              <span style="color: #27ae60; font-weight: 600;">| Đã bán <span id="productSold">0</span></span>
+            </div>
+
+            <!-- SKU & Status -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0;">
+              <div>
+                <span style="color: #666; font-size: 13px;">SKU:</span>
+                <p id="productSKU" style="font-weight: 600;"></p>
+              </div>
+              <div>
+                <span style="color: #666; font-size: 13px;">Tình trạng:</span>
+                <p id="productStock" style="font-weight: 600;"></p>
+              </div>
+            </div>
+
+            <!-- Price -->
+            <div style="margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 12px;">
+                <div style="font-size: 32px; font-weight: 700; color: #d32f2f;" id="productPrice"></div>
+                <div id="productOriginalPrice" style="font-size: 20px; color: #999; text-decoration: line-through;"></div>
+                <div id="productDiscount" style="background-color: #ffebee; color: #d32f2f; padding: 8px 12px; border-radius: 4px; font-weight: 600;"></div>
+              </div>
+            </div>
+
+            <!-- Quantity & Actions -->
+            <div style="margin-bottom: 30px;">
+              <label style="display: block; margin-bottom: 12px; font-weight: 600;">Số lượng:</label>
+              <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; width: 120px;">
+                  <button onclick="decreaseQty()" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 18px;">-</button>
+                  <input type="number" id="quantity" value="1" min="1" style="flex: 1; text-align: center; border: none; width: 40px;">
+                  <button onclick="increaseQty()" style="flex: 1; padding: 10px; border: none; background: none; cursor: pointer; font-size: 18px;">+</button>
+                </div>
+                <span id="stockInfo" style="color: #666; font-size: 14px;"></span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+              <button class="btn btn-primary btn-large" style="flex: 1;" onclick="addToCart()">
+                <i class="fas fa-shopping-cart"></i> Thêm vào giỏ
+              </button>
+              <button class="btn btn-outline btn-large" style="flex: 1;" onclick="buyNow()">
+                <i class="fas fa-bolt"></i> Mua ngay
+              </button>
+              <button class="btn" style="width: 50px; border: 1px solid #ddd;" id="wishlistBtn" onclick="toggleWishlist()">
+                <i class="fas fa-heart"></i>
+              </button>
+            </div>
+
+            <!-- Shipping Info -->
+            <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <i class="fas fa-truck" style="font-size: 18px; color: #d32f2f;"></i>
+                <span><strong>Miễn phí vận chuyển</strong> cho đơn từ 200.000 VNĐ</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                <i class="fas fa-undo" style="font-size: 18px; color: #1976d2;"></i>
+                <span><strong>Đổi trả miễn phí</strong> trong 7 ngày</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-lock" style="font-size: 18px; color: #388e3c;"></i>
+                <span><strong>Thanh toán an toàn</strong> 100% được bảo vệ</span>
+              </div>
+            </div>
+
+            <!-- Share -->
+            <div style="display: flex; align-items: center; gap: 12px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+              <span style="font-weight: 600;">Chia sẻ:</span>
+              <a href="#" class="social-link" style="width: 36px; height: 36px; font-size: 16px;" title="Facebook">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="#" class="social-link" style="width: 36px; height: 36px; font-size: 16px;" title="Zalo">
+                <i class="fas fa-comment"></i>
+              </a>
+              <a href="#" class="social-link" style="width: 36px; height: 36px; font-size: 16px;" title="TikTok">
+                <i class="fab fa-tiktok"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 40px; gap: 30px;">
+        <!-- DESCRIPTION -->
+        <div class="col" style="flex: 1;">
+          <div style="background: white; padding: 25px; border-radius: 8px;">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">Mô tả sản phẩm</h2>
+            <div id="productDescription" style="line-height: 1.8; color: #666;"></div>
+          </div>
+        </div>
+
+        <!-- SPECIFICATION -->
+        <div class="col" style="max-width: 350px;">
+          <div style="background: white; padding: 25px; border-radius: 8px;">
+            <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 20px;">Thông tin chi tiết</h2>
+            <table style="width: 100%; font-size: 14px;">
+              <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 0; font-weight: 600; width: 40%;">Tác giả:</td>
+                <td style="padding: 12px 0;" id="specAuthor"></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 0; font-weight: 600;">Thể loại:</td>
+                <td style="padding: 12px 0;" id="specCategory"></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 0; font-weight: 600;">Nhà xuất bản:</td>
+                <td style="padding: 12px 0;">NXB Kim Đồng</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 0; font-weight: 600;">Năm xuất bản:</td>
+                <td style="padding: 12px 0;">2024</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 0; font-weight: 600;">Số trang:</td>
+                <td style="padding: 12px 0;">320 trang</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e0e0e0;">
+                <td style="padding: 12px 0; font-weight: 600;">Khổ sách:</td>
+                <td style="padding: 12px 0;">15 x 24 cm</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 0; font-weight: 600;">Loại bìa:</td>
+                <td style="padding: 12px 0;">Bìa cứng</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS SECTION -->
+      <div style="background: white; padding: 25px; border-radius: 8px; margin-top: 40px; margin-bottom: 40px;">
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 25px;">Đánh giá & Nhận xét</h2>
+
+        <!-- Review Summary -->
+        <div style="display: grid; grid-template-columns: 200px 1fr; gap: 40px; margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #e0e0e0;">
+          <div style="text-align: center;">
+            <div style="font-size: 48px; font-weight: 700; color: #d32f2f; margin-bottom: 12px;">4.7</div>
+            <div style="color: #ffc107; font-size: 18px; margin-bottom: 12px;">
+              ★★★★★
+            </div>
+            <div style="color: #666; font-size: 14px;">Trên 2,543 đánh giá</div>
+          </div>
+
+          <!-- Rating Bars -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="width: 60px; text-align: right; color: #666; font-size: 14px;">5 ★</span>
+              <div style="flex: 1; height: 8px; background: #e0e0e0; border-radius: 4px;">
+                <div style="width: 85%; height: 100%; background: #ffc107; border-radius: 4px;"></div>
+              </div>
+              <span style="width: 50px; color: #666; font-size: 12px;">2,161</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="width: 60px; text-align: right; color: #666; font-size: 14px;">4 ★</span>
+              <div style="flex: 1; height: 8px; background: #e0e0e0; border-radius: 4px;">
+                <div style="width: 12%; height: 100%; background: #ffc107; border-radius: 4px;"></div>
+              </div>
+              <span style="width: 50px; color: #666; font-size: 12px;">305</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="width: 60px; text-align: right; color: #666; font-size: 14px;">3 ★</span>
+              <div style="flex: 1; height: 8px; background: #e0e0e0; border-radius: 4px;">
+                <div style="width: 2%; height: 100%; background: #ffc107; border-radius: 4px;"></div>
+              </div>
+              <span style="width: 50px; color: #666; font-size: 12px;">51</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+              <span style="width: 60px; text-align: right; color: #666; font-size: 14px;">2 ★</span>
+              <div style="flex: 1; height: 8px; background: #e0e0e0; border-radius: 4px;">
+                <div style="width: 0.5%; height: 100%; background: #ffc107; border-radius: 4px;"></div>
+              </div>
+              <span style="width: 50px; color: #666; font-size: 12px;">13</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="width: 60px; text-align: right; color: #666; font-size: 14px;">1 ★</span>
+              <div style="flex: 1; height: 8px; background: #e0e0e0; border-radius: 4px;">
+                <div style="width: 0.5%; height: 100%; background: #ffc107; border-radius: 4px;"></div>
+              </div>
+              <span style="width: 50px; color: #666; font-size: 12px;">12</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample Reviews -->
+        <div style="margin-bottom: 30px;">
+          <!-- Review Item -->
+          <div style="padding: 20px 0; border-bottom: 1px solid #e0e0e0; display: flex; gap: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #d32f2f; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">A</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong>Anh Tuấn</strong>
+                <span style="color: #666; font-size: 12px;">2 ngày trước</span>
+              </div>
+              <div style="color: #ffc107; font-size: 14px; margin-bottom: 8px;">★★★★★</div>
+              <p style="color: #666; margin-bottom: 8px;">Sách rất hay! Nội dung sâu sắc và dễ hiểu. Chất lượng in ấn tốt. Giao hàng nhanh. Tối sẽ bao giới thiệu bạn bè mua sách ở đây.</p>
+              <button style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 12px; font-weight: 600;">
+                <i class="fas fa-thumbs-up"></i> Hữu ích (12)
+              </button>
+            </div>
+          </div>
+
+          <!-- Review Item -->
+          <div style="padding: 20px 0; border-bottom: 1px solid #e0e0e0; display: flex; gap: 16px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: #1976d2; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">H</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong>Hương Giang</strong>
+                <span style="color: #666; font-size: 12px;">5 ngày trước</span>
+              </div>
+              <div style="color: #ffc107; font-size: 14px; margin-bottom: 8px;">★★★★</div>
+              <p style="color: #666; margin-bottom: 8px;">Sách tốt, tuy nhiên giá có chút cao. Nhưng chất lượng xứng đáng. Giao hàng nhanh chóng.</p>
+              <button style="background: none; border: none; color: #d32f2f; cursor: pointer; font-size: 12px; font-weight: 600;">
+                <i class="fas fa-thumbs-up"></i> Hữu ích (8)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" style="margin-top: 20px;">
+          <i class="fas fa-comments"></i> Xem tất cả đánh giá (2,543)
+        </button>
+      </div>
+
+      <!-- RELATED PRODUCTS -->
+      <section style="margin-bottom: 60px;">
+        <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 25px;">Sách liên quan</h2>
+        <div class="products-grid" id="relatedProducts"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Về BookStore</h3>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Facebook">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" class="social-link" aria-label="Instagram">
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h3>Hỗ Trợ</h3>
+          <div class="footer-contact-item">
+            <i class="fas fa-phone"></i>
+            <span>Hotline: 1900 1234</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    let currentProduct = null;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await new Promise(resolve => {
+        const checkProducts = setInterval(() => {
+          if (APP.products.length > 0) {
+            clearInterval(checkProducts);
+            resolve();
+          }
+        }, 100);
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      const productId = parseInt(params.get('id')) || 1;
+
+      currentProduct = APP.products.find(p => p.id === productId);
+      if (!currentProduct) {
+        currentProduct = APP.products[0];
+      }
+
+      displayProduct();
+      displayRelatedProducts();
+    });
+
+    function displayProduct() {
+      // Update breadcrumb
+      document.getElementById('breadcrumbProduct').textContent = currentProduct.name;
+
+      // Update image
+      document.getElementById('mainImage').src = currentProduct.image;
+      [1, 2, 3].forEach(i => {
+        const img = document.getElementById(`thumb${i}`);
+        img.src = currentProduct.image;
+        img.onclick = () => document.getElementById('mainImage').src = currentProduct.image;
+      });
+
+      // Update info
+      document.getElementById('productName').textContent = currentProduct.name;
+      document.getElementById('productAuthor').textContent = `Tác giả: ${currentProduct.author}`;
+      document.getElementById('productRating').textContent = currentProduct.rating;
+      document.getElementById('productStars').innerHTML = '★'.repeat(Math.floor(currentProduct.rating)) + (currentProduct.rating % 1 >= 0.5 ? '★' : '');
+      document.getElementById('productReviews').textContent = currentProduct.reviews;
+      document.getElementById('productSold').textContent = (Math.random() * 1000).toFixed(0);
+      document.getElementById('productSKU').textContent = currentProduct.sku;
+      document.getElementById('productStock').textContent = currentProduct.quantity > 0 ? '✓ Còn hàng' : 'Hết hàng';
+      document.getElementById('stockInfo').textContent = `Còn ${currentProduct.quantity} sản phẩm`;
+
+      // Price
+      document.getElementById('productPrice').textContent = APP.formatPrice(currentProduct.price);
+      if (currentProduct.originalPrice > currentProduct.price) {
+        document.getElementById('productOriginalPrice').textContent = APP.formatPrice(currentProduct.originalPrice);
+      }
+      if (currentProduct.discount > 0) {
+        document.getElementById('productDiscount').textContent = `-${currentProduct.discount}%`;
+      }
+
+      // Description
+      document.getElementById('productDescription').innerHTML = `
+        <p>${currentProduct.description}</p>
+        <h3 style="margin-top: 20px; margin-bottom: 10px; font-weight: 700;">Đặc điểm nổi bật:</h3>
+        <ul style="margin-left: 20px;">
+          <li style="margin-bottom: 8px;">Tác giả: ${currentProduct.author} - tác giả nổi tiếng</li>
+          <li style="margin-bottom: 8px;">Nội dung chất lượng cao, dễ hiểu</li>
+          <li style="margin-bottom: 8px;">Thiết kế bìa đẹp mắt</li>
+          <li style="margin-bottom: 8px;">Giấy in chất lượng tốt</li>
+          <li style="margin-bottom: 8px;">Phù hợp cho mọi độ tuổi từ 18-45</li>
+        </ul>
+      `;
+
+      // Spec
+      document.getElementById('specAuthor').textContent = currentProduct.author;
+      document.getElementById('specCategory').textContent = currentProduct.category;
+
+      // Update wishlist button
+      const wishlistBtn = document.getElementById('wishlistBtn');
+      if (APP.isFavorite(currentProduct.id)) {
+        wishlistBtn.classList.add('active');
+        wishlistBtn.style.background = '#ffebee';
+        wishlistBtn.style.color = '#d32f2f';
+      }
+    }
+
+    function displayRelatedProducts() {
+      const related = APP.products
+        .filter(p => p.category === currentProduct.category && p.id !== currentProduct.id)
+        .slice(0, 6);
+      APP.renderProducts(related, 'relatedProducts');
+    }
+
+    function increaseQty() {
+      const input = document.getElementById('quantity');
+      input.value = parseInt(input.value) + 1;
+    }
+
+    function decreaseQty() {
+      const input = document.getElementById('quantity');
+      if (parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+      }
+    }
+
+    function addToCart() {
+      const quantity = parseInt(document.getElementById('quantity').value);
+      APP.addToCart(currentProduct.id, quantity);
+    }
+
+    function buyNow() {
+      addToCart();
+      setTimeout(() => window.location.href = 'cart.html', 500);
+    }
+
+    function toggleWishlist() {
+      APP.toggleFavorite(currentProduct.id);
+      const btn = document.getElementById('wishlistBtn');
+      if (APP.isFavorite(currentProduct.id)) {
+        btn.classList.add('active');
+        btn.style.background = '#ffebee';
+        btn.style.color = '#d32f2f';
+      } else {
+        btn.classList.remove('active');
+        btn.style.background = 'white';
+        btn.style.color = '#212121';
+      }
+    }
+  </script>
+</body>
+</html>
