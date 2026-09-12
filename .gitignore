@@ -110,6 +110,10 @@ mysql-backup/
 *.orig
 Backend-Java/result.txt
 
+# Personal report/thesis drafts, not part of the project
+/BAO_CAO_*.md
+/CHUONG_*.md
+
 # One-off local utility scripts (contain hardcoded local credentials)
 /BookCoverDownloader.java
 /BookCoverDownloader.class
