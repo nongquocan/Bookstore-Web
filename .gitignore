@@ -80,6 +80,7 @@ gradle-app.setting
 .env
 .env.*.local
 application-prod.properties
+application-local.properties
 .aws/
 .gcloud/
 secrets/
@@ -107,3 +108,8 @@ mysql-backup/
 *.temp
 *._backup
 *.orig
+Backend-Java/result.txt
+
+# One-off local utility scripts (contain hardcoded local credentials)
+/BookCoverDownloader.java
+/BookCoverDownloader.class

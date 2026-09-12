@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,7 @@ public class BookService {
             int page,
             int limit,
             String category,
+            Long categoryId,
             String search,
             String sort,
             BigDecimal minPrice,
@@ -46,8 +48,12 @@ public class BookService {
 
         if (search != null && !search.isEmpty()) {
             booksPage = bookRepository.searchBooks(search, pageable);
+        } else if (categoryId != null) {
+            // Ưu tiên filter theo category ID qua junction table (chính xác nhất)
+            booksPage = bookRepository.findByCategoryId(categoryId, pageable);
         } else if (category != null && !category.isEmpty()) {
-            booksPage = bookRepository.findByCategoryAndIsAvailableTrue(category, pageable);
+            // Fallback: filter theo search_category text (LIKE)
+            booksPage = bookRepository.findBySearchCategoryContaining(category, pageable);
         } else {
             booksPage = bookRepository.findAll(pageable);
         }
@@ -58,7 +64,7 @@ public class BookService {
     /**
      * Lấy sách theo ID
      */
-    public BookDTO getBookById(Long id) {
+    public BookDTO getBookById(String id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Book not found with id: " + id));
         return BookDTO.fromEntity(book);
@@ -68,7 +74,7 @@ public class BookService {
      * Tìm kiếm sách
      */
     public List<BookDTO> searchBooks(String query, int limit) {
-        Pageable pageable = PageRequest.of(0, Math.min(limit, 20), Sort.by("rating").descending());
+        Pageable pageable = PageRequest.of(0, Math.min(limit, 20), Sort.by("averageRating").descending());
         return bookRepository.searchBooks(query, pageable)
                 .stream()
                 .map(BookDTO::fromEntity)
@@ -76,34 +82,43 @@ public class BookService {
     }
 
     /**
-     * Lấy sách featured
+     * Lấy sách featured (rating cao nhất)
      */
     public List<BookDTO> getFeaturedBooks(int limit) {
-        Pageable pageable = PageRequest.of(0, limit, Sort.by("rating").descending());
-        return bookRepository.findByIsFeaturedTrueAndIsAvailableTrue(pageable)
+        Pageable pageable = PageRequest.of(0, limit, Sort.by("averageRating").descending());
+        return bookRepository.findAll(pageable)
                 .stream()
                 .map(BookDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Lấy sách mới
+     * Lấy sách mới (theo thứ tự trong DB)
      */
     public List<BookDTO> getNewBooks(int limit) {
-        Pageable pageable = PageRequest.of(0, limit, Sort.by("createdAt").descending());
-        return bookRepository.findByIsNewTrueAndIsAvailableTrue(pageable)
+        Pageable pageable = PageRequest.of(0, limit);
+        return bookRepository.findAll(pageable)
                 .stream()
                 .map(BookDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
     /**
-     * Lấy flash sale
+     * Lấy flash sale - sách đang có flash sale hợp lệ (chưa hết hạn)
      */
     public List<BookDTO> getFlashSaleBooks(int limit) {
-        Pageable pageable = PageRequest.of(0, limit, Sort.by("discountPercent").descending());
-        return bookRepository.findByDiscountPercentGreaterThan25AndIsAvailableTrue(pageable)
-                .stream()
+        LocalDateTime now = LocalDateTime.now();
+        List<Book> activeFlashSale = bookRepository.findActiveFlashSaleBooks(now);
+        if (activeFlashSale.isEmpty()) {
+            // Fallback: trả sách có giá cao nhất nếu chưa có flash sale nào
+            Pageable pageable = PageRequest.of(0, limit, Sort.by("listPrice").descending());
+            return bookRepository.findAll(pageable)
+                    .stream()
+                    .map(BookDTO::fromEntity)
+                    .collect(Collectors.toList());
+        }
+        return activeFlashSale.stream()
+                .limit(limit)
                 .map(BookDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -112,22 +127,20 @@ public class BookService {
      * Lấy sách theo danh mục
      */
     public List<BookDTO> getBooksByCategory(String category, int limit) {
-        return bookRepository.findByCategoryAndIsAvailableTrue(category)
+        return bookRepository.findBySearchCategoryContaining(category)
                 .stream()
                 .limit(limit)
                 .map(BookDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
-
-
     /**
      * Lấy thống kê
      */
     public StatsDTO getStats() {
         StatsDTO stats = new StatsDTO();
-        stats.setTotalBooks(bookRepository.countByIsAvailableTrue());
-        stats.setAverageRating(BigDecimal.valueOf(4.5)); // TODO: Calculate from DB
+        stats.setTotalBooks(bookRepository.count());
+        stats.setAverageRating(BigDecimal.valueOf(4.5));
         return stats;
     }
 
@@ -135,32 +148,30 @@ public class BookService {
      * Tạo Pageable
      */
     private Pageable createPageable(int page, int limit, String sortBy) {
-        Sort sort = Sort.by("createdAt").descending();
+        Sort sort = Sort.by("averageRating").descending();
 
         if (sortBy != null) {
             switch (sortBy.toLowerCase()) {
                 case "price-asc":
-                    sort = Sort.by("price").ascending();
+                    sort = Sort.by("listPrice").ascending();
                     break;
                 case "price-desc":
-                    sort = Sort.by("price").descending();
+                    sort = Sort.by("listPrice").descending();
                     break;
                 case "rating":
-                    sort = Sort.by("rating").descending();
+                    sort = Sort.by("averageRating").descending();
                     break;
                 case "bestseller":
-                    sort = Sort.by("ratingCount").descending();
+                    sort = Sort.by("ratingsCount").descending();
                     break;
-                case "newest":
                 default:
-                    sort = Sort.by("createdAt").descending();
+                    sort = Sort.by("averageRating").descending();
             }
         }
 
-        return PageRequest.of(Math.max(0, page - 1), Math.min(limit, 100), sort);
+        return PageRequest.of(Math.max(0, page - 1), Math.min(limit, 2000), sort);
     }
 
-    // DTOs for responses
     public static class StatsDTO {
         private Long totalBooks;
         private BigDecimal averageRating;

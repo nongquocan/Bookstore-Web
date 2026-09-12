@@ -4,98 +4,112 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
-@Table(name = "books", indexes = {
-    @Index(name = "idx_title", columnList = "title"),
-    @Index(name = "idx_category", columnList = "category"),
-    @Index(name = "idx_author", columnList = "author"),
-    @Index(name = "idx_google_id", columnList = "google_id"),
-    @Index(name = "idx_created_at", columnList = "created_at")
-})
+@Table(name = "books")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Book {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "book_id", length = 50, nullable = false)
+    private String id; 
 
-    @Column(unique = true)
-    private String googleId;
-
-    @Column(nullable = false, length = 255)
+    @Column(name = "title", length = 500)
     private String title;
 
-    @Column(length = 255)
-    private String author;
+    @Column(name = "subtitle", length = 500)
+    private String subtitle;
 
-    @Column(length = 100)
-    private String category;
+    @Column(name = "authors", length = 300)
+    private String authors;
 
-    @Column(columnDefinition = "LONGTEXT")
-    private String description;
-
-    @Column(length = 255)
+    @Column(name = "publisher", length = 300)
     private String publisher;
 
-    private LocalDate publishedDate;
+    @Column(name = "published_date", length = 50)
+    private String publishedDate;
 
-    @Column(length = 500)
-    private String imageUrl;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
-    @Column(length = 500)
-    private String thumbnailUrl;
+    @Column(name = "categories", length = 200)
+    private String categories;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "search_category", length = 200)
+    private String searchCategory;
 
-    @Column(precision = 10, scale = 2)
-    private BigDecimal originalPrice;
+    @Column(name = "page_count")
+    private Integer pageCount;
 
-    private Integer discountPercent;
-
-    @Column(precision = 3, scale = 2)
-    private BigDecimal rating;
-
-    private Integer ratingCount;
-
-    private Integer pages;
-
-    @Column(length = 20)
+    @Column(name = "language", length = 20)
     private String language;
 
-    @Column(unique = true, length = 50)
-    private String sku;
+    @Column(name = "isbn_13", length = 20)
+    private String isbn13;
 
-    private Integer quantity;
+    @Column(name = "isbn_10", length = 20)
+    private String isbn10;
 
-    private Boolean isNew;
+    @Column(name = "average_rating")
+    private Float averageRating;
 
-    private Boolean isFeatured;
+    @Column(name = "ratings_count")
+    private Integer ratingsCount;
 
-    private Boolean isAvailable;
+    @Column(name = "list_price")
+    private Float listPrice;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "currency", length = 10)
+    private String currency;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "buyable", length = 10)
+    private String buyable;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (isNew == null) isNew = true;
-        if (isFeatured == null) isFeatured = false;
-        if (isAvailable == null) isAvailable = true;
-    }
+    @Column(name = "preview_link", columnDefinition = "TEXT")
+    private String previewLink;
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @Column(name = "info_link", columnDefinition = "TEXT")
+    private String infoLink;
+
+    @Column(name = "thumbnail", columnDefinition = "TEXT")
+    private String thumbnail;
+
+    // ============================================
+    // Inventory Field
+    // ============================================
+    @Column(name = "stock_quantity")
+    private Integer stockQuantity = 100; // Default 100
+
+    // ============================================
+    // Flash Sale Fields
+    // ============================================
+
+    @Column(name = "flash_sale_price")
+    private Float flashSalePrice;
+
+    @Column(name = "flash_sale_discount_percent")
+    private Integer flashSaleDiscountPercent;
+
+    @Column(name = "flash_sale_start_time")
+    private LocalDateTime flashSaleStartTime;
+
+    @Column(name = "flash_sale_end_time")
+    private LocalDateTime flashSaleEndTime;
+
+    @Column(name = "is_flash_sale")
+    private Boolean isFlashSale = false;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "book_categories",
+        joinColumns = @JoinColumn(name = "book_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private Set<Category> bookCategories = new HashSet<>();
 }

@@ -5,66 +5,95 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookDTO {
-    private Long id;
-    private String googleId;
+    private String id;
     private String title;
-    private String author;
-    private String category;
-    private String description;
+    private String subtitle;
+    private String authors;
     private String publisher;
-    private LocalDate publishedDate;
-    private String imageUrl;
-    private String thumbnailUrl;
-    private BigDecimal price;
-    private BigDecimal originalPrice;
-    private Integer discountPercent;
-    private BigDecimal rating;
-    private Integer ratingCount;
-    private Integer pages;
+    private String publishedDate;
+    private String description;
+    private String categories;
+    private String searchCategory;
+    private Integer pageCount;
     private String language;
-    private String sku;
-    private Integer quantity;
-    private Boolean isNew;
-    private Boolean isFeatured;
-    private Boolean isAvailable;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String isbn13;
+    private String isbn10;
+    private Float averageRating;
+    private Integer ratingsCount;
+    private Float listPrice;
+    private String currency;
+    private String buyable;
+    private String previewLink;
+    private String infoLink;
+    private String thumbnail;
+    // Danh sách category ID từ bảng book_categories (dùng cho filter frontend)
+    private List<Long> categoryIds;
+    
+    private Integer stockQuantity;
 
-    // From Book entity to BookDTO
+    // Flash Sale Fields
+    private Float flashSalePrice;
+    private Integer flashSaleDiscountPercent;
+    private LocalDateTime flashSaleStartTime;
+    private LocalDateTime flashSaleEndTime;
+    private Boolean isFlashSale;
+    // Giá hiệu quả: flashSalePrice nếu đang sale, ngược lại listPrice
+    private Float effectivePrice;
+
     public static BookDTO fromEntity(Book book) {
         BookDTO dto = new BookDTO();
         dto.setId(book.getId());
-        dto.setGoogleId(book.getGoogleId());
         dto.setTitle(book.getTitle());
-        dto.setAuthor(book.getAuthor());
-        dto.setCategory(book.getCategory());
-        dto.setDescription(book.getDescription());
+        dto.setSubtitle(book.getSubtitle());
+        dto.setAuthors(book.getAuthors());
         dto.setPublisher(book.getPublisher());
         dto.setPublishedDate(book.getPublishedDate());
-        dto.setImageUrl(book.getImageUrl());
-        dto.setThumbnailUrl(book.getThumbnailUrl());
-        dto.setPrice(book.getPrice());
-        dto.setOriginalPrice(book.getOriginalPrice());
-        dto.setDiscountPercent(book.getDiscountPercent());
-        dto.setRating(book.getRating());
-        dto.setRatingCount(book.getRatingCount());
-        dto.setPages(book.getPages());
+        dto.setDescription(book.getDescription());
+        dto.setCategories(book.getCategories());
+        dto.setSearchCategory(book.getSearchCategory());
+        dto.setPageCount(book.getPageCount());
         dto.setLanguage(book.getLanguage());
-        dto.setSku(book.getSku());
-        dto.setQuantity(book.getQuantity());
-        dto.setIsNew(book.getIsNew());
-        dto.setIsFeatured(book.getIsFeatured());
-        dto.setIsAvailable(book.getIsAvailable());
-        dto.setCreatedAt(book.getCreatedAt());
-        dto.setUpdatedAt(book.getUpdatedAt());
+        dto.setIsbn13(book.getIsbn13());
+        dto.setIsbn10(book.getIsbn10());
+        dto.setAverageRating(book.getAverageRating());
+        dto.setRatingsCount(book.getRatingsCount());
+        dto.setListPrice(book.getListPrice());
+        dto.setCurrency(book.getCurrency());
+        dto.setBuyable(book.getBuyable());
+        dto.setPreviewLink(book.getPreviewLink());
+        dto.setInfoLink(book.getInfoLink());
+        dto.setThumbnail(book.getThumbnail());
+        // Map danh sách category ID từ junction table
+        if (book.getBookCategories() != null) {
+            dto.setCategoryIds(
+                book.getBookCategories().stream()
+                    .map(cat -> cat.getId())
+                    .collect(Collectors.toList())
+            );
+        }
+        
+        dto.setStockQuantity(book.getStockQuantity() != null ? book.getStockQuantity() : 0);
+
+        // Flash Sale
+        dto.setFlashSalePrice(book.getFlashSalePrice());
+        dto.setFlashSaleDiscountPercent(book.getFlashSaleDiscountPercent());
+        dto.setFlashSaleStartTime(book.getFlashSaleStartTime());
+        dto.setFlashSaleEndTime(book.getFlashSaleEndTime());
+        dto.setIsFlashSale(book.getIsFlashSale());
+        // Tính giá hiệu quả
+        boolean activeFlashSale = Boolean.TRUE.equals(book.getIsFlashSale())
+                && book.getFlashSalePrice() != null
+                && book.getFlashSaleEndTime() != null
+                && book.getFlashSaleEndTime().isAfter(LocalDateTime.now());
+        dto.setEffectivePrice(activeFlashSale ? book.getFlashSalePrice() : book.getListPrice());
         return dto;
     }
 }

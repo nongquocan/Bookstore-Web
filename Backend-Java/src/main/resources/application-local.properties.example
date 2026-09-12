@@ -1,0 +1,16 @@
+# ============================================
+# LOCAL SECRETS TEMPLATE
+# Copy this file to application-local.properties and fill in real values.
+# application-local.properties is gitignored and merged on top of
+# application.properties via spring.config.import.
+# ============================================
+
+spring.datasource.password=changeme
+
+app.jwtSecret=changeme-please-use-a-random-32-plus-character-string
+
+spring.mail.password=changeme
+
+sepay.webhook-token=changeme
+
+gemini.api.key=changeme

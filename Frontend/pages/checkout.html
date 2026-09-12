@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Thanh toán - BookStore">
+  <title>Thanh Toán - BookStore</title>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/checkout.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+
+  <style>
+    /* ── Address search ── */
+    .address-search-wrap { position: relative; margin-bottom: 6px; }
+    .address-search-wrap .search-icon {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      color: #aaa; font-size: 14px; pointer-events: none; z-index: 1;
+    }
+    #addressSearch {
+      width: 100%; padding: 11px 40px 11px 38px;
+      border: 2px solid #ddd; border-radius: 8px;
+      font-size: 14px; transition: border-color .2s; box-sizing: border-box;
+    }
+    #addressSearch:focus { border-color: #d32f2f; outline: none; }
+    #addressSearch.confirmed { border-color: #16a34a; background: #f0fdf4; }
+    #clearSearch {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: #aaa; font-size: 14px; display: none; padding: 4px;
+    }
+    #clearSearch:hover { color: #555; }
+
+    /* ── Suggestion dropdown ── */
+    #suggestions {
+      position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+      background: #fff; border: 1px solid #e0e0e0; border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.12); z-index: 2000;
+      max-height: 260px; overflow-y: auto; display: none;
+    }
+    .suggestion-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 11px 14px; cursor: pointer; border-bottom: 1px solid #f5f5f5;
+      transition: background .15s;
+    }
+    .suggestion-item:last-child { border-bottom: none; }
+    .suggestion-item:hover { background: #fef2f2; }
+    .suggestion-item .s-icon { color: #d32f2f; font-size: 14px; margin-top: 2px; flex-shrink: 0; }
+    .suggestion-item .s-main { font-size: 13px; font-weight: 600; color: #212121; }
+    .suggestion-item .s-sub  { font-size: 11px; color: #888; margin-top: 1px; }
+    .suggestion-loading, .suggestion-empty {
+      padding: 14px; text-align: center; font-size: 13px; color: #888;
+    }
+
+    /* ── Address chip ── */
+    #addressChip {
+      display: none; align-items: flex-start; gap: 10px;
+      background: #f0fdf4; border: 1px solid #bbf7d0;
+      border-radius: 8px; padding: 11px 14px; margin-bottom: 14px;
+    }
+    #addressChip .chip-icon { color: #16a34a; font-size: 17px; margin-top: 2px; flex-shrink: 0; }
+    #addressChip .chip-text { font-size: 13px; line-height: 1.6; flex: 1; }
+    #addressChip .chip-text strong { display: block; font-size: 13px; font-weight: 700; color: #166534; }
+    #addressChip .chip-change {
+      font-size: 12px; color: #d32f2f; cursor: pointer;
+      padding: 3px 8px; border-radius: 4px; border: 1px solid #fca5a5;
+      white-space: nowrap; flex-shrink: 0; user-select: none;
+    }
+    #addressChip .chip-change:hover { background: #fff5f5; }
+
+    /* ── Map preview ── */
+    #mapPreview {
+      width: 100%; height: 230px; border-radius: 8px;
+      border: 1px solid #e0e0e0; margin-bottom: 6px;
+      display: none;
+    }
+    /* Fix leaflet z-index conflict with page */
+    #mapPreview .leaflet-top,
+    #mapPreview .leaflet-bottom { z-index: 500; }
+    .map-drag-hint {
+      font-size: 11px; color: #888; text-align: right;
+      margin-bottom: 14px; display: none;
+    }
+    .map-drag-hint i { color: #d32f2f; }
+
+    /* ── Locate button ── */
+    #locateBtn {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; color: #1a73e8; background: none;
+      border: 1px solid #c5d9f7; border-radius: 6px;
+      padding: 8px 13px; cursor: pointer; margin-bottom: 14px;
+      transition: background .15s;
+    }
+    #locateBtn:hover { background: #e8f0fe; }
+    #locateBtn:disabled { opacity: .6; cursor: not-allowed; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinning { animation: spin .8s linear infinite; display: inline-block; }
+
+    /* ── Extra fields ── */
+    /* Removed extraFields animation as they are always shown now */
+
+    /* ── Form layout ── */
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .field-group { margin-bottom: 16px; }
+    .field-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #444; }
+    .field-group input,
+    .field-group textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+      border-radius: 6px; font-size: 14px; box-sizing: border-box; transition: border-color .2s;
+    }
+    .field-group input:focus,
+    .field-group textarea:focus { border-color: #d32f2f; outline: none; }
+    .field-hint { font-size: 11px; color: #999; margin-top: 4px; }
+    .sep { border-top: 1px dashed #e5e7eb; margin: 4px 0 18px; }
+    .section-label {
+      font-size: 13px; font-weight: 700; color: #444; margin-bottom: 12px;
+    }
+    .section-label i { color: #d32f2f; margin-right: 6px; }
+
+    /* Checkout step styles */
+    .checkout-step { text-align: center; position: relative; z-index: 2; flex: 1; }
+    .step-circle {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: white; border: 2px solid #ddd;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; margin: 0 auto 12px; font-size: 18px;
+    }
+    .checkout-step.active .step-circle { background: #d32f2f; color: white; border-color: #d32f2f; }
+    .checkout-step p { font-size: 14px; font-weight: 600; color: #666; }
+    .checkout-step.active p { color: #d32f2f; }
+    .checkout-section { animation: fadeUp 0.3s ease; }
+  </style>
+</head>
+<body>
+<!-- HEADER -->
+<header class="header">
+  <div class="container">
+    <div class="navbar">
+      <a href="../index.html" class="logo">
+        <i class="fas fa-book-open"></i>
+        <span>BookStore</span>
+      </a>
+      <div class="search-container" style="position:relative;">
+        <input type="search" id="mainSearchInput" class="search-input" placeholder="Tìm sách, tác giả, thể loại...">
+        <button id="mainSearchBtn" aria-label="Tìm kiếm" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#666;">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+      <div class="icon-bar">
+        <a href="login.html" class="icon-item"><i class="fas fa-user"></i></a>
+        <a href="cart.html" class="icon-item">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-badge" style="display:none;">0</span>
+        </a>
+        <a href="account.html" class="icon-item"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main role="main">
+  <div class="container">
+    <h1 style="font-size:28px;font-weight:700;margin-bottom:30px;">Thanh Toán</h1>
+
+    <!-- Steps indicator -->
+    <div style="display:flex;justify-content:space-between;margin-bottom:40px;position:relative;">
+      <div style="position:absolute;top:20px;left:0;right:0;height:2px;background:#e0e0e0;z-index:1;"></div>
+      <div class="checkout-step active"><div class="step-circle">1</div><p>Địa chỉ giao hàng</p></div>
+      <div class="checkout-step"><div class="step-circle">2</div><p>Phương thức vận chuyển</p></div>
+      <div class="checkout-step"><div class="step-circle">3</div><p>Phương thức thanh toán</p></div>
+    </div>
+
+    <div class="row" style="gap:30px;">
+      <!-- LEFT: Forms -->
+      <div class="col" style="flex:2;">
+
+        <!-- ── STEP 1: Address ── -->
+        <div class="checkout-section active" id="step1">
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;">
+            <i class="fas fa-map-marker-alt"></i> Địa chỉ giao hàng
+          </h2>
+
+          <div style="background:white;padding:24px;border-radius:8px;">
+
+            <!-- Recipient info -->
+            <div class="field-row">
+              <div class="field-group">
+                <label>Họ và tên *</label>
+                <input type="text" id="recipientName" placeholder="Nguyễn Văn A">
+              </div>
+              <div class="field-group">
+                <label>Số điện thoại *</label>
+                <input type="tel" id="recipientPhone" placeholder="0912 345 678">
+              </div>
+            </div>
+            <div class="field-group">
+              <label>Email *</label>
+              <input type="email" id="recipientEmail" placeholder="email@example.com">
+            </div>
+
+            <div class="sep"></div>
+            <p class="section-label"><i class="fas fa-map-marker-alt"></i>Địa chỉ giao hàng</p>
+
+            <!-- Saved Address Selector -->
+            <div id="savedAddressSelector" style="display:none; margin-bottom:20px;">
+               <label style="display:flex;align-items:center;gap:16px;padding:16px;border:2px solid #d32f2f;border-radius:8px;margin-bottom:12px;cursor:pointer;" id="labelSavedAddress">
+                 <input type="radio" name="addressChoice" value="saved" checked onchange="toggleAddressMode()">
+                 <div style="flex:1;">
+                   <div style="font-weight:600;margin-bottom:4px;"><i class="fas fa-bookmark" style="color:#d32f2f;"></i> Giao đến địa chỉ đã lưu</div>
+                   <div style="font-size:13px;color:#444;" id="textSavedAddress"></div>
+                 </div>
+               </label>
+               <label style="display:flex;align-items:center;gap:16px;padding:16px;border:2px solid #ddd;border-radius:8px;margin-bottom:12px;cursor:pointer;" id="labelNewAddress">
+                 <input type="radio" name="addressChoice" value="new" onchange="toggleAddressMode()">
+                 <div style="flex:1;">
+                   <div style="font-weight:600;margin-bottom:4px;">Giao đến địa chỉ mới</div>
+                   <div style="font-size:13px;color:#666;">Chọn vị trí mới trên bản đồ</div>
+                 </div>
+               </label>
+               
+               <!-- Thêm tùy chọn lưu địa chỉ mới vào hồ sơ nếu dùng địa chỉ mới -->
+               <label id="saveToProfileWrap" style="display:none; align-items:center; gap:8px; margin-top:8px; cursor:pointer; font-size:13px;">
+                   <input type="checkbox" id="chkSaveAddressToProfile" checked>
+                   <span>Đặt làm địa chỉ mặc định mới cho các lần mua sau</span>
+               </label>
+            </div>
+
+            <!-- New Address Map Container -->
+            <div id="newAddressContainer">
+              <!-- Locate me -->
+              <button id="locateBtn" onclick="locateMe()">
+                <i class="fas fa-location-arrow" id="locateIcon"></i>
+                Dùng vị trí hiện tại của tôi
+              </button>
+  
+              <!-- Search box -->
+              <div class="address-search-wrap" id="searchWrap">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                        id="addressSearch"
+                        type="text"
+                        placeholder="Nhập tên đường, địa điểm, tòa nhà..."
+                        autocomplete="off"
+                >
+                <button id="clearSearch" onclick="clearSearch()" title="Xóa">
+                  <i class="fas fa-times"></i>
+                </button>
+                <div id="suggestions"></div>
+              </div>
+              <p style="font-size:11px;color:#aaa;margin-top:-2px;margin-bottom:14px;">
+                Dữ liệu địa chỉ từ OpenStreetMap · Nominatim
+              </p>
+  
+              <!-- Confirmed address chip -->
+              <div id="addressChip">
+                <i class="fas fa-check-circle chip-icon"></i>
+                <div class="chip-text">
+                  <strong id="chipMainAddress"></strong>
+                  <span id="chipSubAddress"></span>
+                </div>
+                <span class="chip-change" onclick="resetAddressUIOnly()">Đổi địa chỉ</span>
+              </div>
+  
+              <!-- Leaflet map -->
+              <div id="mapPreview"></div>
+              <p class="map-drag-hint" id="mapDragHint">
+                <i class="fas fa-map-pin"></i> Kéo ghim đỏ để điều chỉnh vị trí chính xác
+              </p>
+            </div>
+
+            <!-- Extra fields -->
+            <div class="field-group" style="margin-top:16px;">
+              <label>Số nhà / Tầng / Căn hộ</label>
+              <input type="text" id="unitNumber" placeholder="Ví dụ: Tầng 3, Phòng 302">
+              <p class="field-hint">Không bắt buộc</p>
+            </div>
+            <div class="field-group">
+              <label>Ghi chú cho người giao hàng</label>
+              <textarea id="deliveryNote" rows="2" placeholder="Ví dụ: Gọi trước khi giao, để trước cửa..."></textarea>
+            </div>
+
+            <!-- Hidden data fields -->
+            <input type="hidden" id="hiddenStreet">
+            <input type="hidden" id="hiddenDistrict">
+            <input type="hidden" id="hiddenCity">
+            <input type="hidden" id="hiddenLat">
+            <input type="hidden" id="hiddenLng">
+            <input type="hidden" id="hiddenFullAddress">
+
+          </div>
+
+          <button onclick="proceedToShipping()" class="btn btn-primary" style="margin-top:20px;padding:12px 30px;">
+            Tiếp tục - Phương thức vận chuyển <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- ── STEP 2: Shipping ── -->
+        <div class="checkout-section" id="step2" style="display:none;">
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;">
+            <i class="fas fa-truck"></i> Phương thức vận chuyển
+          </h2>
+          <div style="background:white;padding:20px;border-radius:8px;">
+            <label style="display:flex;align-items:center;gap:16px;padding:16px;border:2px solid #d32f2f;border-radius:8px;margin-bottom:12px;cursor:pointer;">
+              <input type="radio" name="shipping" value="standard" checked>
+              <div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;">Vận chuyển tiêu chuẩn</div><div style="font-size:12px;color:#666;">Giao hàng trong 3-5 ngày</div></div>
+              <div style="color:#d32f2f;font-weight:600;">30.000 VNĐ</div>
+            </label>
+            <label style="display:flex;align-items:center;gap:16px;padding:16px;border:2px solid #ddd;border-radius:8px;margin-bottom:12px;cursor:pointer;">
+              <input type="radio" name="shipping" value="express">
+              <div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;">Vận chuyển nhanh</div><div style="font-size:12px;color:#666;">Giao hàng trong 1-2 ngày</div></div>
+              <div style="color:#d32f2f;font-weight:600;">60.000 VNĐ</div>
+            </label>
+            <label style="display:flex;align-items:center;gap:16px;padding:16px;border:2px solid #ddd;border-radius:8px;cursor:pointer;">
+              <input type="radio" name="shipping" value="sameday">
+              <div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;">Giao hàng cùng ngày</div><div style="font-size:12px;color:#666;">Chỉ áp dụng tại TP.HCM</div></div>
+              <div style="color:#d32f2f;font-weight:600;">120.000 VNĐ</div>
+            </label>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:20px;">
+            <button onclick="prevStep()" class="btn btn-outline" style="padding:12px 30px;">
+              <i class="fas fa-arrow-left"></i> Quay lại
+            </button>
+            <button onclick="nextStep()" class="btn btn-primary" style="padding:12px 30px;">
+              Tiếp tục - Phương thức thanh toán <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: Payment ── -->
+        <div class="checkout-section" id="step3" style="display:none;">
+          <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;">
+            <i class="fas fa-credit-card"></i> Phương thức thanh toán
+          </h2>
+          <div style="background:white;padding:20px;border-radius:8px;">
+            <label style="display:flex;align-items:center;gap:16px;padding:16px;border:2px solid #d32f2f;border-radius:8px;margin-bottom:12px;cursor:pointer;">
+              <input type="radio" name="payment" value="cod" checked>
+              <div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;">Thanh toán khi nhận hàng (COD)</div><div style="font-size:12px;color:#666;">Thanh toán tiền mặt khi nhận hàng</div></div>
+            </label>
+            <label style="display:flex;align-items:center;gap:16px;padding:16px;border:2px solid #ddd;border-radius:8px;cursor:pointer;">
+              <input type="radio" name="payment" value="sepay">
+              <div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;"><i class="fas fa-qrcode"></i> Chuyển khoản qua SePay</div><div style="font-size:12px;color:#666;">Quét mã QR qua ứng dụng ngân hàng</div></div>
+            </label>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:20px;">
+            <button onclick="prevStep()" class="btn btn-outline" style="padding:12px 30px;">
+              <i class="fas fa-arrow-left"></i> Quay lại
+            </button>
+            <button onclick="completeOrder()" class="btn btn-primary" style="padding:12px 30px;flex:1;">
+              <i class="fas fa-check-circle"></i> Hoàn tất đơn hàng
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Order summary -->
+      <div class="col" style="flex:1;">
+        <div style="background:white;padding:20px;border-radius:8px;position:sticky;top:100px;">
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:20px;">Đơn hàng của bạn</h2>
+          <div id="orderItems" style="max-height:300px;overflow-y:auto;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #e0e0e0;"></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e0e0e0;">
+            <span>Tạm tính:</span><span id="orderSubtotal" style="font-weight:600;">0₫</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e0e0e0;">
+            <span>Vận chuyển:</span><span id="orderShipping" style="font-weight:600;">30.000₫</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e0e0e0; color:#d32f2f;">
+            <span>Giảm giá:</span><span id="orderDiscount" style="font-weight:600;">0₫</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;color:#d32f2f;">
+            <span>Tổng cộng:</span><span id="orderTotal">0₫</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Về BookStore</h3>
+        <p style="margin-bottom:16px;font-size:14px;">BookStore là cửa hàng sách trực tuyến hàng đầu Việt Nam.</p>
+      </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2024 BookStore.</p></div>
+  </div>
+</footer>
+
+<!-- Leaflet JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script src="../assets/js/config.js"></script>
+<script src="../assets/js/api.js"></script>
+<script>
+  /* Suppress main.js crash on elements that don't exist in checkout */
+  window.addEventListener('error', function(e) {
+    if (e.filename && e.filename.includes('main.js')) { e.preventDefault(); return true; }
+  }, true);
+</script>
+<script src="../assets/js/main.js"></script>
+
+<script>
+  'use strict';
+
+  // ─── State ────────────────────────────────────────────────────────────────
+  let currentStep  = 1;
+  let currentCart  = [];
+  let leafletMap   = null;
+  let leafletMarker = null;
+  let searchTimer  = null;        // debounce for Nominatim
+  let lastQuery    = '';
+
+  // Custom red marker icon
+  const redIcon = L.divIcon({
+    className: '',
+    html: `<svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+               <path d="M16 0C7.163 0 0 7.163 0 16c0 12 16 26 16 26s16-14 16-26C32 7.163 24.837 0 16 0z" fill="#d32f2f"/>
+               <circle cx="16" cy="16" r="6" fill="white"/>
+             </svg>`,
+    iconSize: [32, 42],
+    iconAnchor: [16, 42],
+    popupAnchor: [0, -42],
+  });
+
+  // ─── 1. Nominatim autocomplete ────────────────────────────────────────────
+  const searchInput = document.getElementById('addressSearch');
+  const suggestBox  = document.getElementById('suggestions');
+  const clearBtn    = document.getElementById('clearSearch');
+
+  searchInput.addEventListener('input', function() {
+    const q = this.value.trim();
+    clearBtn.style.display = q ? 'block' : 'none';
+
+    if (q.length < 3) { hideSuggestions(); return; }
+    if (q === lastQuery) return;
+    lastQuery = q;
+
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => fetchSuggestions(q), 400); // debounce 400ms
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { hideSuggestions(); this.blur(); }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('searchWrap').contains(e.target)) hideSuggestions();
+  });
+
+  async function fetchSuggestions(query) {
+    suggestBox.style.display = 'block';
+    suggestBox.innerHTML = '<div class="suggestion-loading"><i class="fas fa-spinner fa-spin"></i> Đang tìm...</div>';
+
+    try {
+      // Nominatim — ưu tiên kết quả trong Việt Nam
+      const url = `https://nominatim.openstreetmap.org/search?` +
+              new URLSearchParams({
+                q: query + ', Việt Nam',
+                format: 'json',
+                addressdetails: 1,
+                limit: 7,
+                countrycodes: 'vn',
+                'accept-language': 'vi',
+              });
+
+      const res  = await fetch(url, { headers: { 'Accept-Language': 'vi' } });
+      const data = await res.json();
+
+      if (!data.length) {
+        suggestBox.innerHTML = '<div class="suggestion-empty"><i class="fas fa-map-marker-alt"></i> Không tìm thấy địa chỉ phù hợp</div>';
+        return;
+      }
+
+      suggestBox.innerHTML = data.map((item, i) => {
+        const addr = item.address || {};
+        const main = item.namedetails?.name
+                || addr.road
+                || addr.neighbourhood
+                || item.display_name.split(',')[0];
+        const parts = [
+          addr.suburb || addr.quarter || addr.neighbourhood,
+          addr.city_district || addr.district || addr.county,
+          addr.city || addr.town || addr.state,
+        ].filter(Boolean);
+        const sub = parts.join(', ') || item.display_name;
+
+        return `<div class="suggestion-item" onclick="selectSuggestion(${i})" data-idx="${i}">
+            <i class="fas fa-map-marker-alt s-icon"></i>
+            <div>
+              <div class="s-main">${escHtml(main)}</div>
+              <div class="s-sub">${escHtml(sub)}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Store results on DOM for retrieval
+      suggestBox.dataset.results = JSON.stringify(data);
+
+    } catch (err) {
+      suggestBox.innerHTML = '<div class="suggestion-empty">Lỗi tìm kiếm. Vui lòng thử lại.</div>';
+    }
+  }
+
+  function selectSuggestion(idx) {
+    const data = JSON.parse(suggestBox.dataset.results || '[]');
+    const item = data[idx];
+    if (!item) return;
+
+    const lat = parseFloat(item.lat);
+    const lng = parseFloat(item.lon);
+    const addr = item.address || {};
+
+    // Fill hidden fields
+    const street   = [addr.house_number, addr.road].filter(Boolean).join(' ')
+            || item.display_name.split(',')[0];
+    const district = addr.city_district || addr.district || addr.county || addr.suburb || '';
+    const city     = addr.city || addr.town || addr.state || '';
+    const full     = item.display_name;
+
+    saveAddress({ lat, lng, street, district, city, full });
+    confirmAddress({ lat, lng, street, district, city, full });
+    hideSuggestions();
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    clearBtn.style.display = 'none';
+    searchInput.classList.remove('confirmed');
+    hideSuggestions();
+    searchInput.focus();
+  }
+
+  function hideSuggestions() {
+    suggestBox.style.display = 'none';
+  }
+
+  // ─── 2. Browser geolocation + reverse geocode ────────────────────────────
+  function locateMe() {
+    if (!navigator.geolocation) { showToast('Trình duyệt không hỗ trợ định vị', 'error'); return; }
+
+    const btn  = document.getElementById('locateBtn');
+    const icon = document.getElementById('locateIcon');
+    btn.disabled = true;
+    icon.className = 'fas fa-circle-notch spinning';
+
+    navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              const lat = pos.coords.latitude;
+              const lng = pos.coords.longitude;
+              btn.disabled = false;
+              icon.className = 'fas fa-location-arrow';
+
+              showToast('Đã xác định vị trí, đang lấy địa chỉ...', 'success');
+              await reverseGeocode(lat, lng);
+            },
+            (err) => {
+              btn.disabled = false;
+              icon.className = 'fas fa-location-arrow';
+              const msgs = { 1: 'Bạn đã từ chối quyền định vị.', 2: 'Không xác định được vị trí.', 3: 'Hết thời gian chờ.' };
+              showToast(msgs[err.code] || 'Lỗi định vị.', 'error');
+            },
+            { timeout: 10000, maximumAge: 30000 }
+    );
+  }
+
+  async function reverseGeocode(lat, lng) {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?` +
+              new URLSearchParams({ lat, lon: lng, format: 'json', addressdetails: 1, 'accept-language': 'vi' });
+      const res  = await fetch(url, { headers: { 'Accept-Language': 'vi' } });
+      const item = await res.json();
+      const addr = item.address || {};
+
+      const street   = [addr.house_number, addr.road].filter(Boolean).join(' ')
+              || item.display_name.split(',')[0];
+      const district = addr.city_district || addr.district || addr.county || addr.suburb || '';
+      const city     = addr.city || addr.town || addr.state || '';
+      const full     = item.display_name;
+
+      saveAddress({ lat, lng, street, district, city, full });
+      confirmAddress({ lat, lng, street, district, city, full });
+    } catch {
+      showToast('Không thể lấy địa chỉ từ vị trí. Vui lòng nhập thủ công.', 'error');
+    }
+  }
+
+  // ─── 3. Save + confirm address ───────────────────────────────────────────
+  function saveAddress({ lat, lng, street, district, city, full }) {
+    document.getElementById('hiddenLat').value         = lat;
+    document.getElementById('hiddenLng').value         = lng;
+    document.getElementById('hiddenStreet').value      = street;
+    document.getElementById('hiddenDistrict').value    = district;
+    document.getElementById('hiddenCity').value        = city;
+    document.getElementById('hiddenFullAddress').value = full;
+  }
+
+  function confirmAddress({ lat, lng, street, district, city, full }) {
+    // Update chip
+    const sub = [district, city].filter(Boolean).join(', ');
+    document.getElementById('chipMainAddress').textContent = street || full.split(',')[0];
+    document.getElementById('chipSubAddress').textContent  = sub;
+    document.getElementById('addressChip').style.display   = 'flex';
+
+    // Style search input
+    searchInput.value = full;
+    searchInput.classList.add('confirmed');
+    clearBtn.style.display = 'block';
+
+    // Show map
+    showLeafletMap(lat, lng);
+  }
+
+  // ─── 4. Leaflet map ───────────────────────────────────────────────────────
+  function showLeafletMap(lat, lng) {
+    const mapDiv  = document.getElementById('mapPreview');
+    const hint    = document.getElementById('mapDragHint');
+    mapDiv.style.display = 'block';
+    hint.style.display   = 'block';
+
+    if (!leafletMap) {
+      leafletMap = L.map('mapPreview', { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 17);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(leafletMap);
+
+      leafletMarker = L.marker([lat, lng], { icon: redIcon, draggable: true })
+              .addTo(leafletMap)
+              .bindPopup('Vị trí giao hàng')
+              .openPopup();
+
+      leafletMarker.on('dragend', async function() {
+        const pos = leafletMarker.getLatLng();
+        document.getElementById('hiddenLat').value = pos.lat;
+        document.getElementById('hiddenLng').value = pos.lng;
+        await reverseGeocode(pos.lat, pos.lng);
+      });
+
+    } else {
+      leafletMap.setView([lat, lng], 17);
+      leafletMarker.setLatLng([lat, lng]);
+    }
+
+    // Force re-render (needed when map was hidden)
+    setTimeout(() => leafletMap.invalidateSize(), 100);
+  }
+
+  // ─── 5. Reset address ────────────────────────────────────────────────────
+  function resetAddressUIOnly() {
+    searchInput.value = '';
+    searchInput.classList.remove('confirmed');
+    clearBtn.style.display = 'none';
+    lastQuery = '';
+
+    document.getElementById('addressChip').style.display   = 'none';
+    document.getElementById('mapPreview').style.display    = 'none';
+    document.getElementById('mapDragHint').style.display   = 'none';
+
+    ['hiddenStreet','hiddenDistrict','hiddenCity','hiddenLat','hiddenLng','hiddenFullAddress']
+            .forEach(id => document.getElementById(id).value = '');
+
+    searchInput.focus();
+  }
+  
+  function resetAddress() {
+    resetAddressUIOnly();
+    document.getElementById('unitNumber').value = '';
+  }
+
+  // ─── 6. Validate step 1 ──────────────────────────────────────────────────
+  function proceedToShipping() {
+    const name  = document.getElementById('recipientName').value.trim();
+    const phone = document.getElementById('recipientPhone').value.trim();
+    const email = document.getElementById('recipientEmail').value.trim();
+    const addr  = document.getElementById('hiddenFullAddress').value.trim();
+
+    if (!name)  { showToast('Vui lòng nhập họ và tên', 'error');  return; }
+    if (!phone) { showToast('Vui lòng nhập số điện thoại', 'error'); return; }
+    if (!email) { showToast('Vui lòng nhập email', 'error');  return; }
+    if (!addr)  { showToast('Vui lòng chọn địa chỉ giao hàng', 'error'); searchInput.focus(); return; }
+
+    nextStep();
+  }
+
+  // ─── 7. Step navigation ──────────────────────────────────────────────────
+  function nextStep() { if (currentStep < 3) { currentStep++; updateSteps(); } }
+  function prevStep() { if (currentStep > 1) { currentStep--; updateSteps(); } }
+
+  function updateSteps() {
+    document.querySelectorAll('.checkout-section').forEach(el => el.style.display = 'none');
+    document.getElementById(`step${currentStep}`).style.display = 'block';
+    document.querySelectorAll('.checkout-step').forEach((el, i) => {
+      el.classList.toggle('active', i + 1 <= currentStep);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    updateOrderTotal();
+  }
+
+  // ─── 8. Cart + order summary + user init ───────────────────────────────
+  let savedUserAddressData = null;
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    if (!api.isAuthenticated()) { window.location.href = 'login.html'; return; }
+
+    await loadUserForCheckout();
+    await loadCartForCheckout();
+  });
+
+  async function loadUserForCheckout() {
+    try {
+      const res = await api.getCurrentUser();
+      const u = res.data || res;
+      
+      const fullName = [u.firstName, u.lastName].filter(Boolean).join(' ');
+      if (fullName)  document.getElementById('recipientName').value  = fullName;
+      if (u.email)   document.getElementById('recipientEmail').value = u.email;
+      if (u.phone)   document.getElementById('recipientPhone').value = u.phone;
+
+      if (u.addressFull) {
+          savedUserAddressData = {
+              lat: parseFloat(u.addressLat) || 0,
+              lng: parseFloat(u.addressLng) || 0,
+              street: u.addressStreet || '',
+              district: u.addressDistrict || '',
+              city: u.addressCity || '',
+              full: u.addressFull || '',
+              unit: u.addressUnit || ''
+          };
+          
+          document.getElementById('savedAddressSelector').style.display = 'block';
+          
+          const unitPrefix = u.addressUnit ? u.addressUnit + ', ' : '';
+          document.getElementById('textSavedAddress').innerHTML = `<strong>${unitPrefix}${u.addressFull}</strong>`;
+          
+          // Mặc định chọn địa chỉ đã lưu
+          const savedRadio = document.querySelector('input[name="addressChoice"][value="saved"]');
+          if (savedRadio) savedRadio.checked = true;
+          toggleAddressMode();
+      } else {
+          // Chưa có địa chỉ lưu, hiển thị form tạo mới
+          const newRadio = document.querySelector('input[name="addressChoice"][value="new"]');
+          if (newRadio) newRadio.checked = true;
+          toggleAddressMode();
+      }
+    } catch(err) {
+       console.error("Lỗi khi tải thông tin user:", err);
+       const newRadio = document.querySelector('input[name="addressChoice"][value="new"]');
+       if (newRadio) newRadio.checked = true;
+       toggleAddressMode();
+    }
+  }
+
+  window.toggleAddressMode = function() {
+      const choiceNode = document.querySelector('input[name="addressChoice"]:checked');
+      if (!choiceNode) return;
+      const isNew = choiceNode.value === 'new';
+      
+      const lblSaved = document.getElementById('labelSavedAddress');
+      const lblNew   = document.getElementById('labelNewAddress');
+      if (lblSaved) {
+          lblSaved.style.borderColor = isNew ? '#ddd' : '#d32f2f';
+          lblNew.style.borderColor   = isNew ? '#d32f2f' : '#ddd';
+      }
+
+      const mapSection = document.getElementById('newAddressContainer');
+      const saveToProfileWrap = document.getElementById('saveToProfileWrap');
+      
+      if (isNew) {
+          mapSection.style.display = 'block';
+          saveToProfileWrap.style.display = 'flex';
+          if (leafletMap) setTimeout(() => leafletMap.invalidateSize(), 150);
+          resetAddress(); // Yêu cầu nhập mới
+      } else {
+          mapSection.style.display = 'none';
+          saveToProfileWrap.style.display = 'none';
+          
+          if (savedUserAddressData) {
+              document.getElementById('hiddenLat').value         = savedUserAddressData.lat;
+              document.getElementById('hiddenLng').value         = savedUserAddressData.lng;
+              document.getElementById('hiddenStreet').value      = savedUserAddressData.street;
+              document.getElementById('hiddenDistrict').value    = savedUserAddressData.district;
+              document.getElementById('hiddenCity').value        = savedUserAddressData.city;
+              document.getElementById('hiddenFullAddress').value = savedUserAddressData.full;
+              document.getElementById('unitNumber').value        = savedUserAddressData.unit;
+          }
+      }
+  }
+
+  async function loadCartForCheckout() {
+    try {
+      const response = await api.getCart();
+      currentCart = response.data || [];
+      if (currentCart.length === 0) {
+        showToast('Giỏ hàng trống, đang chuyển về...', 'error');
+        setTimeout(() => { window.location.href = 'cart.html'; }, 1500);
+        return;
+      }
+      renderOrderSummary();
+    } catch {
+      showToast('Không thể tải thông tin đơn hàng', 'error');
+    }
+  }
+
+  function renderOrderSummary() {
+    document.getElementById('orderItems').innerHTML = currentCart.map(item => `
+        <div style="display:flex;gap:12px;margin-bottom:16px;">
+          <img src="${item.bookThumbnail||'https://via.placeholder.com/60x90?text=Book'}"
+               alt="${item.bookTitle}"
+               onerror="this.src='https://via.placeholder.com/60x90?text=Book'"
+               style="width:60px;height:90px;object-fit:cover;border-radius:4px;flex-shrink:0;">
+          <div style="flex:1;">
+            <p style="font-size:13px;font-weight:600;margin-bottom:4px;">${item.bookTitle}</p>
+            <p style="font-size:12px;color:#666;">x${item.quantity}</p>
+            <p style="font-size:13px;font-weight:600;color:#d32f2f;">${fmt(item.subtotal)}</p>
+          </div>
+        </div>`).join('');
+    updateOrderTotal();
+  }
+
+  function updateOrderTotal() {
+    const subtotal    = currentCart.reduce((s, i) => s + (i.subtotal || 0), 0);
+    const shippingVal = document.querySelector('input[name="shipping"]:checked')?.value || 'standard';
+    const feeMap      = { standard: 30000, express: 60000, sameday: 120000 };
+    const shipping    = (subtotal >= 200000 && shippingVal === 'standard') ? 0 : feeMap[shippingVal];
+    
+    // Apply discount
+    let discountAmount = 0;
+    try {
+      const voucherStr = localStorage.getItem('bookstore_applied_voucher');
+      if (voucherStr) {
+        const voucher = JSON.parse(voucherStr);
+        if (voucher.discountAmount) discountAmount = voucher.discountAmount;
+      }
+    } catch(e) {}
+
+    const total = Math.max(0, subtotal + shipping - discountAmount);
+
+    document.getElementById('orderSubtotal').textContent = fmt(subtotal);
+    document.getElementById('orderShipping').textContent = shipping === 0 ? 'Miễn phí' : fmt(shipping);
+    document.getElementById('orderDiscount').textContent = discountAmount > 0 ? '-' + fmt(discountAmount) : '0₫';
+    document.getElementById('orderTotal').textContent    = fmt(total);
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.name === 'shipping') updateOrderTotal();
+  });
+
+  // ─── 9. Complete order (Đã sửa lỗi 400) ───────────────────────────────────
+  async function completeOrder() {
+    const btn = document.querySelector('button[onclick="completeOrder()"]');
+
+    // Nếu chọn Mới và muốn lưu hồ sơ
+    const chk = document.getElementById('chkSaveAddressToProfile');
+    const isNew = document.querySelector('input[name="addressChoice"]:checked')?.value === 'new';
+    
+    // Thu thập dữ liệu từ các thẻ input và hidden fields
+    const orderData = {
+      paymentMethod: document.querySelector('input[name="payment"]:checked').value,
+      shippingMethod: document.querySelector('input[name="shipping"]:checked').value,
+      recipientName: document.getElementById('recipientName').value.trim(),
+      recipientPhone: document.getElementById('recipientPhone').value.trim(),
+      recipientEmail: document.getElementById('recipientEmail').value.trim(),
+      shippingAddress: document.getElementById('hiddenFullAddress').value,
+      street: document.getElementById('hiddenStreet').value,
+      district: document.getElementById('hiddenDistrict').value,
+      city: document.getElementById('hiddenCity').value,
+      unitNumber: document.getElementById('unitNumber').value.trim(),
+      deliveryNote: document.getElementById('deliveryNote').value.trim(),
+      latitude: parseFloat(document.getElementById('hiddenLat').value) || 0,
+      longitude: parseFloat(document.getElementById('hiddenLng').value) || 0,
+      voucherCode: ''
+    };
+
+    try {
+      const voucherStr = localStorage.getItem('bookstore_applied_voucher');
+      if (voucherStr) {
+        const voucher = JSON.parse(voucherStr);
+        if (voucher.code) orderData.voucherCode = voucher.code;
+      }
+    } catch(e) {}
+
+    // Kiểm tra nhanh thông tin bắt buộc
+    if (!orderData.recipientName || !orderData.shippingAddress) {
+      showToast('Vui lòng điền đầy đủ thông tin giao hàng', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+    // Lưu vào profile nếu được chọn
+    if (isNew && chk && chk.checked) {
+       try {
+          await api.updateUserAddress({
+             fullAddress: orderData.shippingAddress,
+             unit: orderData.unitNumber,
+             street: orderData.street,
+             district: orderData.district,
+             city: orderData.city,
+             lat: orderData.latitude,
+             lng: orderData.longitude
+          });
+       } catch (err) {
+          console.warn('Lỗi lưu lại làm địa chỉ mặc định', err);
+       }
+    }
+
+    try {
+      const response = await api.createOrder(orderData);
+      showToast('Đặt hàng thành công! 🎉', 'success');
+
+      // Xử lý chuyển hướng nếu là SePay thì chuyển tới trang chi tiết đơn hàng
+      const data = response.data;
+      
+      // Xóa voucher trong localStorage sau khi đặt hàng thành công
+      localStorage.removeItem('bookstore_applied_voucher');
+      
+      if (orderData.paymentMethod === 'sepay' && data && data.orderId) {
+        setTimeout(() => { window.location.href = 'orders.html?detail=' + data.orderId; }, 1000);
+      } else if (data && (data.paymentUrl || data.payUrl)) {
+        window.location.href = data.paymentUrl || data.payUrl;
+      } else {
+        setTimeout(() => { window.location.href = 'orders.html'; }, 1500);
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+      showToast('Có lỗi xảy ra: ' + error.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-circle"></i> Hoàn tất đơn hàng';
+    }
+  }
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+  function fmt(price) {
+    return price ? new Intl.NumberFormat('vi-VN').format(price) + '₫' : '0₫';
+  }
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function showToast(msg, type) {
+    const el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = `position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:8px;color:#fff;font-size:14px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);background:${type==='success'?'#16a34a':'#d32f2f'};transition:opacity .3s;`;
+    document.body.appendChild(el);
+    setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, 3200);
+  }
+</script>
+
+<script>
+  (function initHeaderSearch() {
+    var input = document.getElementById('mainSearchInput');
+    var btn   = document.getElementById('mainSearchBtn');
+    if (!input) return;
+    function goSearch(q) {
+      q = (q || '').trim();
+      if (!q) return;
+      window.location.href = 'products.html?search=' + encodeURIComponent(q);
+    }
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') goSearch(this.value);
+    });
+    btn.addEventListener('click', function() { goSearch(input.value); });
+  })();
+</script>
+
+  <!-- AI Book Chat Widget -->
+  <script src="../assets/js/ai-chat.js"></script>
+
+</body>
+
+</html>

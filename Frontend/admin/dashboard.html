@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BookStore</title>
+    <link rel="icon" type="image/png" href="../assets/images/favicon.png">
+
+    <!-- Font Awesome (khớp với index.html) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin CSS (style mới, khớp BookStore) -->
+    <link rel="stylesheet" href="../assets/css/admin.css">
+
+    <script src="../assets/js/config.js"></script>
+
+    <!-- Admin Guard -->
+    <script>
+        (function adminGuard() {
+            const token = localStorage.getItem('bookstore_token');
+            const userRaw = localStorage.getItem('bookstore_user');
+            if (!token || !userRaw) {
+                window.location.replace('../pages/login.html'); return;
+            }
+            try {
+                const user = JSON.parse(userRaw);
+                const roles = user.roles || user.authorities || [];
+                const isAdmin = roles.some(function (r) {
+                    if (typeof r === 'string') return r === 'ROLE_ADMIN' || r === 'ADMIN';
+                    var val = r.name || r.authority || r.role || '';
+                    return val === 'ROLE_ADMIN' || val === 'ADMIN';
+                });
+                if (!isAdmin) window.location.replace('../pages/login.html');
+            } catch (e) {
+                window.location.replace('../pages/login.html');
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="admin-wrapper">
+
+        <!-- ========== SIDEBAR ========== -->
+        <aside class="admin-sidebar" id="adminSidebar">
+
+            <!-- Logo -->
+            <div class="sidebar-logo">
+                <div class="logo-icon"></div>
+                <div>
+                    <div class="logo-text">BookStore</div>
+                    <div class="logo-sub">Quản trị hệ thống</div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="admin-nav">
+                <div class="admin-nav-label">Tổng quan</div>
+                <a href="#" class="admin-nav-link active" data-page="dashboard">
+                    <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+                    Dashboard
+                </a>
+
+                <div class="admin-nav-label">Quản lý</div>
+                <a href="#" class="admin-nav-link" data-page="books">
+                    <span class="nav-icon"><i class="fas fa-book"></i></span>
+                    Quản Lý Sách
+                </a>
+                <a href="#" class="admin-nav-link" data-page="flash-sale">
+                    <span class="nav-icon"><i class="fas fa-bolt" style="color:#ff6b00"></i></span>
+                    <span style="color:#ff6b00;font-weight:600">Flash Sale</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-page="categories">
+                    <span class="nav-icon"><i class="fas fa-folder-open"></i></span>
+                    Danh Mục
+                </a>
+                <a href="#" class="admin-nav-link" data-page="orders">
+                    <span class="nav-icon"><i class="fas fa-shopping-bag"></i></span>
+                    Đơn Hàng
+                </a>
+                <a href="#" class="admin-nav-link" data-page="users">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    Người Dùng
+                </a>
+                <a href="#" class="admin-nav-link" data-page="reviews">
+                    <span class="nav-icon"><i class="fas fa-star"></i></span>
+                    Đánh Giá
+                </a>
+                <a href="#" class="admin-nav-link" data-page="layout">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    Quản Lý Layout
+                </a>
+                <a href="#" class="admin-nav-link" data-page="vouchers">
+                    <span class="nav-icon"><i class="fas fa-ticket-alt" style="color:#2e7d32"></i></span>
+                    Mã Giảm Giá
+                </a>
+
+                <hr class="nav-divider">
+
+                <div class="admin-nav-label">Hệ thống</div>
+                <a href="../index.html" class="admin-nav-link" title="Quay lại trang mua sắm">
+                    <span class="nav-icon"><i class="fas fa-home" style="color:#ed820f"></i></span>
+                    <span style="color:#dd8616; font-weight:600;">Về Trang Chủ</span>
+                </a>
+                <a href="#" class="admin-nav-link" data-page="settings">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    Cài Đặt
+                </a>
+                <a href="javascript:logout()" class="admin-nav-link logout">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    Đăng Xuất
+                </a>
+            </nav>
+        </aside>
+
+        <!-- ========== MAIN ========== -->
+        <div class="admin-main">
+
+            <!-- Top Bar -->
+            <header class="admin-topbar">
+                <div class="topbar-left">
+                    <!-- Hamburger (mobile) -->
+                    <button id="sidebarToggle" class="topbar-bell" title="Menu" style="display:none">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <div class="topbar-title" id="pageTitle">Dashboard</div>
+                        <div class="topbar-breadcrumb">BookStore Admin / <span id="pageBreadcrumb">Dashboard</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <a href="../index.html" class="topbar-bell" title="Về trang chủ"
+                        style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <button class="topbar-bell" title="Thông báo">
+                        <i class="fas fa-bell"></i>
+                        <span class="bell-badge">3</span>
+                    </button>
+                    <div class="topbar-avatar" title="Admin" id="topbarAvatar">A</div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="admin-content-area">
+
+                <!-- ===== DASHBOARD PAGE ===== -->
+                <div id="dashboard" class="page-content active">
+
+                    <!-- Stat Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card blue">
+                            <div class="stat-info">
+                                <div class="stat-label">Tổng Sách</div>
+                                <div class="stat-value" id="totalBooks">—</div>
+                                <div class="stat-sub">Trong kho</div>
+                            </div>
+                            <div class="stat-icon"><i class="fas fa-book" style="color:#1976d2"></i></div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-info">
+                                <div class="stat-label">Tổng Đơn Hàng</div>
+                                <div class="stat-value" id="totalOrders">—</div>
+                                <div class="stat-sub">Tất cả trạng thái</div>
+                            </div>
+                            <div class="stat-icon"><i class="fas fa-shopping-bag" style="color:#388e3c"></i></div>
+                        </div>
+                        <div class="stat-card amber">
+                            <div class="stat-info">
+                                <div class="stat-label">Doanh Thu</div>
+                                <div class="stat-value" id="totalRevenue">—</div>
+                                <div class="stat-sub">Đơn đã hoàn thành</div>
+                            </div>
+                            <div class="stat-icon"><i class="fas fa-coins" style="color:#f57c00"></i></div>
+                        </div>
+                        <div class="stat-card red">
+                            <div class="stat-info">
+                                <div class="stat-label">Người Dùng</div>
+                                <div class="stat-value" id="totalUsers">—</div>
+                                <div class="stat-sub">Tài khoản đăng ký</div>
+                            </div>
+                            <div class="stat-icon"><i class="fas fa-users" style="color:#d32f2f"></i></div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Đơn Hàng Gần Đây</div>
+                            <a href="#" class="btn btn-secondary btn-sm" data-page="orders">Xem tất cả</a>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã Đơn</th>
+                                        <th>Khách Hàng</th>
+                                        <th>Tổng Tiền</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Ngày Đặt</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentOrdersTable">
+                                    <tr>
+                                        <td colspan="5" class="text-center"
+                                            style="padding:40px;color:#9e9e9e;font-size:14px;">
+                                            <i class="fas fa-circle-notch fa-spin"
+                                                style="margin-right:8px;color:#d32f2f"></i>Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== BOOKS PAGE ===== -->
+                <div id="books" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-book" style="color:#d32f2f;margin-right:8px"></i>Quản Lý Sách</h2>
+                        <button id="addBookBtn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Thêm Sách Mới
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="search-bar">
+                            <input type="text" id="bookSearch" class="form-control" placeholder="🔍  Tìm kiếm sách...">
+                            <select id="categoryFilter" class="form-control" style="max-width:200px">
+                                <option value="">Tất Cả Danh Mục</option>
+                            </select>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên Sách</th>
+                                        <th>Tác Giả</th>
+                                        <th>Danh Mục</th>
+                                        <th>Giá Gốc</th>
+                                        <th>Kho (Tồn)</th>
+                                        <th>Flash Sale</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="booksTable">
+                                    <tr>
+                                        <td colspan="7"
+                                            style="padding:40px;text-align:center;color:#9e9e9e;font-size:14px;">
+                                            <i class="fas fa-circle-notch fa-spin"
+                                                style="color:#d32f2f;margin-right:8px"></i>Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== FLASH SALE PAGE ===== -->
+                <div id="flash-sale" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-bolt" style="color:#ff6b00;margin-right:8px"></i>Quản Lý Flash Sale</h2>
+                        <button onclick="admin.switchPage('books')" class="btn btn-primary" style="background:linear-gradient(135deg,#ff6b00,#d32f2f)">
+                            <i class="fas fa-plus"></i> Thêm Sách Flash Sale
+                        </button>
+                    </div>
+
+                    <!-- Active Flash Sales -->
+                    <div class="card" style="border-top:3px solid #ff6b00">
+                        <div class="card-header">
+                            <div class="card-title" style="color:#ff6b00">
+                                <i class="fas fa-fire"></i> Danh Sách Sách Đang Flash Sale
+                            </div>
+                            <button onclick="admin.loadFlashSaleManagement()" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-sync-alt"></i> Làm mới
+                            </button>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên Sách</th>
+                                        <th>Giá Gốc</th>
+                                        <th>Giá Flash Sale</th>
+                                        <th>Giảm Giá</th>
+                                        <th>Kết Thúc</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="flashSaleTableBody">
+                                    <tr>
+                                        <td colspan="7" style="padding:40px;text-align:center;color:#9e9e9e">
+                                            <i class="fas fa-circle-notch fa-spin" style="color:#ff6b00"></i> Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- How to use -->
+                    <div class="card" style="margin-top:16px;background:linear-gradient(135deg,#fff8e1,#fff3cd);border:1px solid #ffcc02">
+                        <div class="card-header">
+                            <div class="card-title" style="color:#f57c00">ℹ️ Hướng Dẫn Sử Dụng Flash Sale</div>
+                        </div>
+                        <div style="padding:16px;color:#5d4037;line-height:1.8">
+                            <ol style="margin:0;padding-left:20px">
+                                <li>Sang trang <strong>Quản Lý Sách</strong></li>
+                                <li>Nhấn nút <strong>"Sửa"</strong> bên cạnh sách muốn thêm vào Flash Sale</li>
+                                <li>Trong modal, điều chỉnh <strong>% giảm giá</strong> và <strong>thời gian kết thúc</strong></li>
+                                <li>Nhấn <strong>"Bật Flash Sale"</strong> → giá sẽ tự giảm theo %</li>
+                                <li>Khi hết giờ, hệ thống tự động reset giá về bình thường (mỗi 60 giây kiểm tra một lần)</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== CATEGORIES PAGE ===== -->
+                <div id="categories" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-folder-open" style="color:#d32f2f;margin-right:8px"></i>Quản Lý Danh Mục
+                        </h2>
+                        <button id="addCategoryBtn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Thêm Danh Mục
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên Danh Mục</th>
+                                        <th>Số Sách</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoriesTable">
+                                    <tr>
+                                        <td colspan="4"
+                                            style="padding:40px;text-align:center;color:#9e9e9e;font-size:14px;">
+                                            <i class="fas fa-circle-notch fa-spin"
+                                                style="color:#d32f2f;margin-right:8px"></i>Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== ORDERS PAGE ===== -->
+                <div id="orders" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-shopping-bag" style="color:#d32f2f;margin-right:8px"></i>Quản Lý Đơn Hàng
+                        </h2>
+                    </div>
+                    <div class="card">
+                        <div class="search-bar">
+                            <input type="text" class="form-control" placeholder="🔍  Tìm kiếm đơn hàng...">
+                            <select id="orderStatusFilter" class="form-control" style="max-width:200px">
+                                <option value="">Tất Cả Trạng Thái</option>
+                                <option value="pending">Chờ Xử Lý</option>
+                                <option value="confirmed">Đã Xác Nhận</option>
+                                <option value="shipped">Đang Giao</option>
+                                <option value="delivered">Đã Giao</option>
+                                <option value="cancelled">Hủy</option>
+                            </select>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã Đơn</th>
+                                        <th>Khách Hàng</th>
+                                        <th>Tổng Tiền</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Ngày Đặt</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ordersTable">
+                                    <tr>
+                                        <td colspan="6"
+                                            style="padding:40px;text-align:center;color:#9e9e9e;font-size:14px;">
+                                            <i class="fas fa-circle-notch fa-spin"
+                                                style="color:#d32f2f;margin-right:8px"></i>Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== USERS PAGE ===== -->
+                <div id="users" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-users" style="color:#d32f2f;margin-right:8px"></i>Quản Lý Người Dùng</h2>
+                    </div>
+                    <div class="card">
+                        <div class="search-bar">
+                            <input type="text" class="form-control" placeholder="🔍  Tìm kiếm người dùng...">
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên</th>
+                                        <th>Email</th>
+                                        <th>Số Điện Thoại</th>
+                                        <th>Ngày Tạo</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable">
+                                    <tr>
+                                        <td colspan="6"
+                                            style="padding:40px;text-align:center;color:#9e9e9e;font-size:14px;">
+                                            <i class="fas fa-circle-notch fa-spin"
+                                                style="color:#d32f2f;margin-right:8px"></i>Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== REVIEWS PAGE ===== -->
+                <div id="reviews" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-star" style="color:#d32f2f;margin-right:8px"></i>Quản Lý Đánh Giá</h2>
+                    </div>
+                    <div class="card">
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã Sách</th>
+                                        <th>Tên Sách</th>
+                                        <th>Số Lượng Đánh Giá</th>
+                                        <th>Điểm Trung Bình</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewsTable">
+                                    <tr>
+                                        <td colspan="6"
+                                            style="padding:40px;text-align:center;color:#9e9e9e;font-size:14px;">
+                                            <i class="fas fa-circle-notch fa-spin"
+                                                style="color:#d32f2f;margin-right:8px"></i>Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== SETTINGS PAGE ===== -->
+                <div id="settings" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-cog" style="color:#d32f2f;margin-right:8px"></i>Cài Đặt</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Cài Đặt Chung</div>
+                        </div>
+                        <form onsubmit="return false">
+                            <div class="form-group">
+                                <label class="form-label">Tên Cửa Hàng</label>
+                                <input type="text" value="BookStore" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email Liên Hệ</label>
+                                <input type="email" value="contact@bookstore.com" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Số Điện Thoại</label>
+                                <input type="tel" value="+84 123 456 789" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Địa Chỉ</label>
+                                <input type="text" value="123 Đường ABC, TP HCM" class="form-control">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu Thay Đổi
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ===== LAYOUT PAGE ===== -->
+                <div id="layout" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-th-large" style="color:#d32f2f;margin-right:8px"></i>Quản Lý Layout</h2>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Cấu hình mục trên Trang Chủ</div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Thứ tự</th>
+                                        <th>Tên mục</th>
+                                        <th>Loại mục</th>
+                                        <th>Số lượng hiển thị</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="layoutTableBody">
+                                    <tr>
+                                        <td colspan="6" style="padding:40px;text-align:center;color:#9e9e9e;">
+                                            <i class="fas fa-circle-notch fa-spin" style="color:#d32f2f"></i> Đang tải cấu hình...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== VOUCHERS PAGE ===== -->
+                <div id="vouchers" class="page-content hidden">
+                    <div class="page-header">
+                        <h2><i class="fas fa-ticket-alt" style="color:#2e7d32;margin-right:8px"></i>Quản Lý Mã Giảm Giá</h2>
+                        <button onclick="admin.openVoucherModal()" class="btn btn-primary" style="background:#2e7d32">
+                            <i class="fas fa-plus"></i> Thêm Mã Mới
+                        </button>
+                    </div>
+                    <div class="card">
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Mã Code</th>
+                                        <th>Giảm Giá</th>
+                                        <th>Đơn Tối Thiểu</th>
+                                        <th>Hạn Sử Dụng</th>
+                                        <th>Trạng Thái</th>
+                                        <th>Hành Động</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vouchersTableBody">
+                                    <tr>
+                                        <td colspan="7" style="padding:40px;text-align:center;color:#9e9e9e;">
+                                            <i class="fas fa-circle-notch fa-spin" style="color:#2e7d32;margin-right:8px"></i>Đang tải...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div><!-- /admin-main -->
+    </div><!-- /admin-wrapper -->
+
+    <!-- ========== BOOK MODAL ========== -->
+    <div id="bookModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="bookModalTitle">Thêm Sách Mới</div>
+                <button class="modal-close" onclick="closeBookModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="bookForm">
+                <div class="form-group">
+                    <label class="form-label">Tên Sách <span style="color:#d32f2f">*</span></label>
+                    <input type="text" id="bookTitle" class="form-control" placeholder="Nhập tên sách..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tác Giả <span style="color:#d32f2f">*</span></label>
+                    <input type="text" id="bookAuthor" class="form-control" placeholder="Nhập tên tác giả..." required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Danh Mục <span style="color:#d32f2f">*</span></label>
+                    <select id="bookCategory" class="form-control" required></select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div class="form-group">
+                        <label class="form-label">Giá (₫) <span style="color:#d32f2f">*</span></label>
+                        <input type="number" id="bookPrice" class="form-control" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tồn Kho <span style="color:#d32f2f">*</span></label>
+                        <input type="number" id="bookStock" class="form-control" placeholder="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mô Tả</label>
+                    <textarea id="bookDescription" class="form-control" rows="4"
+                        placeholder="Nhập mô tả sách..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== LAYOUT MODAL ========== -->
+    <div id="layoutModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Chỉnh sửa mục Trang Chủ</div>
+                <button class="modal-close" onclick="closeLayoutModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="layoutForm">
+                <input type="hidden" id="layoutId">
+                <div class="form-group">
+                    <label class="form-label">Tên mục hiển thị</label>
+                    <input type="text" id="layoutTitle" class="form-control" placeholder="Ví dụ: Flash Sale" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số lượng hiển thị (quyển sách)</label>
+                    <input type="number" id="layoutItemCount" class="form-control" min="1" max="24" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Thứ tự hiển thị (càng nhỏ càng về đầu)</label>
+                    <input type="number" id="layoutOrder" class="form-control" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Trạng thái</label>
+                    <select id="layoutActive" class="form-control">
+                        <option value="true">Hiển thị</option>
+                        <option value="false">Ẩn</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">
+                    <i class="fas fa-save"></i> Cập nhật cấu hình
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========== REVIEWS MODAL ========== -->
+    <div id="bookReviewsModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 800px; width: 90%;">
+            <div class="modal-header">
+                <div class="modal-title" id="bookReviewsModalTitle">Đánh Giá Của Sách</div>
+                <button class="modal-close" onclick="closeBookReviewsModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="table-wrapper" style="max-height: 400px; overflow-y: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Người Dùng</th>
+                            <th>Đánh Giá</th>
+                            <th>Nội Dung</th>
+                            <th>Ngày Đăng</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookReviewsTableBody">
+                        <tr>
+                            <td colspan="6" style="padding:40px;text-align:center;color:#9e9e9e;">
+                                Đang tải...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin.js"></script>
+
+    <script>
+        /* ── Navigation ── */
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.admin-nav-link[data-page]').forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const page = this.dataset.page;
+                    navigateTo(page);
+                });
+            });
+
+            /* "Xem tất cả" buttons */
+            document.querySelectorAll('[data-page]').forEach(function (el) {
+                if (el.tagName === 'A' && !el.classList.contains('admin-nav-link')) {
+                    el.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        navigateTo(this.dataset.page);
+                    });
+                }
+            });
+
+            /* Mobile sidebar toggle */
+            const toggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('adminSidebar');
+            if (toggle) {
+                toggle.style.display = 'flex';
+                toggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('open');
+                });
+            }
+
+            /* Avatar initial from localStorage */
+            try {
+                const u = JSON.parse(localStorage.getItem('bookstore_user') || '{}');
+                const name = u.name || u.fullName || u.email || 'A';
+                document.getElementById('topbarAvatar').textContent = name.charAt(0).toUpperCase();
+            } catch (e) { }
+        });
+
+        function navigateTo(page) {
+            /* Hide all pages */
+            document.querySelectorAll('.page-content').forEach(function (p) {
+                p.classList.remove('active');
+                p.classList.add('hidden');
+            });
+
+            /* Show target page */
+            const target = document.getElementById(page);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('active');
+            }
+
+            /* Update active nav link */
+            document.querySelectorAll('.admin-nav-link').forEach(function (l) {
+                l.classList.remove('active');
+            });
+            const activeLink = document.querySelector('.admin-nav-link[data-page="' + page + '"]');
+            if (activeLink) activeLink.classList.add('active');
+
+            /* Update page title */
+            const titles = {
+                dashboard: 'Dashboard', books: 'Quản Lý Sách',
+                'flash-sale': 'Flash Sale',
+                categories: 'Danh Mục', orders: 'Đơn Hàng',
+                users: 'Người Dùng', reviews: 'Đánh Giá', layout: 'Quản Lý Layout', settings: 'Cài Đặt', vouchers: 'Mã Giảm Giá'
+            };
+            document.getElementById('pageTitle').textContent = titles[page] || page;
+            document.getElementById('pageBreadcrumb').textContent = titles[page] || page;
+            
+            // Add custom data loading trigger for admin.js
+            if (window.admin && typeof window.admin.loadPageData === 'function') {
+                window.admin.loadPageData(page);
+            }
+        }
+
+        /* Modal helpers (giữ tương thích với admin.js) */
+        function closeBookModal() {
+            document.getElementById('bookModal').classList.add('hidden');
+        }
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+    </script>
+
+    <!-- ========== EDIT PRICE + FLASH SALE MODAL ========== -->
+    <div id="editPriceModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:520px">
+            <div class="modal-header" style="background:linear-gradient(135deg,#1976d2,#0d47a1);color:#fff">
+                <div class="modal-title" style="color:#fff">
+                    <i class="fas fa-tag" style="margin-right:8px"></i>Chỉnh Sửa Sách
+                </div>
+                <button class="modal-close" onclick="closeEditPriceModal()" style="color:#fff"><i class="fas fa-times"></i></button>
+            </div>
+
+            <input type="hidden" id="editPriceBookId">
+
+            <!-- Book info -->
+            <div style="padding:20px 24px 0;background:#f8f9fa;border-bottom:1px solid #e0e0e0">
+                <div style="font-size:13px;color:#666;margin-bottom:4px">Sách đang chỉnh sửa:</div>
+                <div id="editPriceBookTitle" style="font-weight:700;font-size:16px;color:#1976d2;line-height:1.3"></div>
+                <div style="margin-top:6px;font-size:13px;color:#888">Giá hiện tại: <strong id="editPriceCurrentPrice" style="color:#d32f2f"></strong></div>
+            </div>
+
+            <!-- Section 1: Update Price & Stock -->
+            <div style="padding:20px 24px;border-bottom:2px dashed #e0e0e0">
+                <div style="font-weight:700;color:#1976d2;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                    <i class="fas fa-dollar-sign"></i> Cập Nhật Giá & Số Lượng Sách
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Giá mới (đồng) <span style="color:#d32f2f">*</span></label>
+                        <input type="number" id="editPriceInput" class="form-control" min="0" step="1000"
+                            placeholder="Ví dụ: 89000" style="font-size:16px;font-weight:600">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Kho (Tồn) <span style="color:#d32f2f">*</span></label>
+                        <input type="number" id="editStockInputModal" class="form-control" min="0"
+                            placeholder="Ví dụ: 100" style="font-size:16px;font-weight:600">
+                    </div>
+                </div>
+                <button onclick="saveBookPrice()" class="btn btn-primary" style="width:100%">
+                    <i class="fas fa-save"></i> Lưu Thay Đổi
+                </button>
+            </div>
+
+            <!-- Section 2: Flash Sale -->
+            <div style="padding:20px 24px;background:linear-gradient(135deg,#fff8e1,#fff3cd)">
+                <div style="font-weight:700;color:#ff6b00;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+                    <i class="fas fa-bolt"></i> Bật Flash Sale
+                    <span style="font-size:11px;font-weight:400;color:#888;margin-left:auto">Giá tự giảm theo %</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div class="form-group">
+                        <label class="form-label">Giảm giá (%)</label>
+                        <input type="number" id="flashSaleDiscountPercent" class="form-control"
+                            min="1" max="99" value="10" style="font-size:16px;font-weight:700;color:#d32f2f">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Kết thúc lúc</label>
+                        <input type="datetime-local" id="flashSaleEndTime" class="form-control">
+                    </div>
+                </div>
+                <!-- Preview -->
+                <div style="background:#fff;border:1px solid #ffcc02;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px">
+                    <i class="fas fa-info-circle" style="color:#f57c00"></i>
+                    Giá sau khi Flash Sale = Giá hiện tại &times; (1 - %giảm/100)
+                </div>
+                <button onclick="saveFlashSaleFromModal()" class="btn btn-primary"
+                    style="width:100%;background:linear-gradient(135deg,#ff6b00,#d32f2f);font-size:15px">
+                    <i class="fas fa-fire"></i> Bật Flash Sale
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== VOUCHER MODAL ========== -->
+    <div id="voucherModal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width:500px">
+            <div class="modal-header" style="background:#2e7d32;color:#fff">
+                <div class="modal-title" style="color:#fff" id="voucherModalTitle">
+                    <i class="fas fa-ticket-alt" style="margin-right:8px"></i>Thêm Mã Giảm Giá
+                </div>
+                <button class="modal-close" onclick="admin.closeVoucherModal()" style="color:#fff"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="voucherForm" style="padding:20px" onsubmit="return false">
+                <input type="hidden" id="voucherId">
+                <div class="form-group">
+                    <label class="form-label">Mã Code (Tự động in hoa) <span style="color:#d32f2f">*</span></label>
+                    <input type="text" id="voucherCode" class="form-control" placeholder="VD: SALE20" required style="text-transform:uppercase">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div class="form-group">
+                        <label class="form-label">Giảm Giá (%) <span style="color:#d32f2f">*</span></label>
+                        <input type="number" id="voucherPercent" class="form-control" min="1" max="100" placeholder="10" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Giảm Tối Đa (VNĐ)</label>
+                        <input type="number" id="voucherMaxAmount" class="form-control" placeholder="VD: 50000">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:16px;border-top:1px dashed #e0e0e0;padding-top:16px">
+                    <label class="form-label">Đơn Hàng Tối Thiểu (VNĐ)</label>
+                    <input type="number" id="voucherMinOrder" class="form-control" placeholder="VD: 200000">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div class="form-group">
+                        <label class="form-label">Giới Hạn Lượt Dùng</label>
+                        <input type="number" id="voucherLimit" class="form-control" placeholder="0 = Không giới hạn" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hạn Sử Dụng</label>
+                        <input type="datetime-local" id="voucherExpiry" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Trạng Thái</label>
+                    <select id="voucherActive" class="form-control">
+                        <option value="true">Kích hoạt</option>
+                        <option value="false">Khóa</option>
+                    </select>
+                </div>
+                <button onclick="admin.saveVoucher()" class="btn btn-primary" style="width:100%;background:#2e7d32">
+                    <i class="fas fa-save"></i> Lưu Mã Giảm Giá
+                </button>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

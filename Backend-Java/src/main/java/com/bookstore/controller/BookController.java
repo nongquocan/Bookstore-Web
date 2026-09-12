@@ -18,12 +18,8 @@ import com.bookstore.dto.ApiResponse;
 import com.bookstore.dto.BookDTO;
 import com.bookstore.service.BookService;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Setter
-@Getter
 @RestController
 @RequestMapping("/api/books")
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5500", "http://localhost:8000"})
@@ -44,6 +40,7 @@ public class BookController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int limit,
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) BigDecimal minPrice,
@@ -52,7 +49,7 @@ public class BookController {
 
         try {
             Page<BookDTO> booksPage = bookService.getAllBooks(
-                    page, limit, category, search, sort, minPrice, maxPrice, minRating);
+                    page, limit, category, categoryId, search, sort, minPrice, maxPrice, minRating);
 
             Map<String, Object> response = new HashMap<>();
             response.put("data", booksPage.getContent());
@@ -71,10 +68,10 @@ public class BookController {
     }
 
     /**
-     * GET /api/books/:id - Lấy sách theo ID
+     * GET /api/books/:id - Lấy sách theo ID (String vì book_id là varchar)
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<?>> getBookById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<?>> getBookById(@PathVariable String id) {
         try {
             BookDTO book = bookService.getBookById(id);
             return ResponseEntity.ok(ApiResponse.success(book));
@@ -85,7 +82,7 @@ public class BookController {
     }
 
     /**
-     * GET /api/books/search/:query - Tìm kiếm sách
+     * GET /api/books/search/{query} - Tìm kiếm sách
      */
     @GetMapping("/search/{query}")
     public ResponseEntity<ApiResponse<?>> searchBooks(
@@ -138,7 +135,7 @@ public class BookController {
      */
     @GetMapping("/flash-sale/list")
     public ResponseEntity<ApiResponse<?>> getFlashSaleBooks(
-            @RequestParam(defaultValue = "8") int limit) {
+            @RequestParam(defaultValue = "10") int limit) {
 
         try {
             List<BookDTO> books = bookService.getFlashSaleBooks(limit);
@@ -150,7 +147,7 @@ public class BookController {
     }
 
     /**
-     * GET /api/books/category/:name - Lấy sách theo danh mục
+     * GET /api/books/category/{name} - Lấy sách theo danh mục
      */
     @GetMapping("/category/{name}")
     public ResponseEntity<ApiResponse<?>> getBooksByCategory(
