@@ -4,6 +4,7 @@ import com.bookstore.entity.Book;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,17 @@ import java.util.List;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, String> {
+
+    /** Trừ kho nguyên tử: chỉ thành công (trả 1) khi còn đủ hàng. */
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE Book b SET b.stockQuantity = b.stockQuantity - :qty " +
+            "WHERE b.id = :id AND b.stockQuantity >= :qty")
+    int decreaseStock(@Param("id") String id, @Param("qty") int qty);
+
+    /** Hoàn kho nguyên tử (huỷ đơn / thanh toán thất bại). */
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE Book b SET b.stockQuantity = COALESCE(b.stockQuantity, 0) + :qty WHERE b.id = :id")
+    int increaseStock(@Param("id") String id, @Param("qty") int qty);
 
     // Tìm sách theo search_category (text) - exact match
     Page<Book> findBySearchCategory(String searchCategory, Pageable pageable);

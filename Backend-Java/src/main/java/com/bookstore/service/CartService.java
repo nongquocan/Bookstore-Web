@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,35 +27,32 @@ public class CartService {
         return carts.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    @Transactional
     public CartDTO addToCart(User user, String bookId, Integer quantity) {
-        Optional<Book> bookOpt = bookRepository.findById(bookId);
-        if (!bookOpt.isPresent()) {
-            throw new RuntimeException("Book not found");
-        }
-        Book book = bookOpt.get();
+        requirePositive(quantity);
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
 
-        Optional<Cart> existing = cartRepository.findByUserAndBook(user, bookId);
-        if (existing.isPresent()) {
-            Cart cart = existing.get();
-            cart.setQuantity(cart.getQuantity() + quantity);
-            cartRepository.save(cart);
-            return convertToDTO(cart);
-        } else {
-            Cart cart = new Cart();
+        Cart cart = cartRepository.findByUserAndBook(user, bookId).orElse(null);
+        int newQuantity = (cart != null ? cart.getQuantity() : 0) + quantity;
+        requireInStock(book, newQuantity);
+
+        if (cart == null) {
+            cart = new Cart();
             cart.setUser(user);
             cart.setBook(book);
-            cart.setQuantity(quantity);
-            cartRepository.save(cart);
-            return convertToDTO(cart);
         }
+        cart.setQuantity(newQuantity);
+        cartRepository.save(cart);
+        return convertToDTO(cart);
     }
 
+    @Transactional
     public CartDTO updateCartItem(User user, String bookId, Integer quantity) {
-        Optional<Cart> cartOpt = cartRepository.findByUserAndBook(user, bookId);
-        if (!cartOpt.isPresent()) {
-            throw new RuntimeException("Cart item not found");
-        }
-        Cart cart = cartOpt.get();
+        requirePositive(quantity);
+        Cart cart = cartRepository.findByUserAndBook(user, bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart item not found"));
+        requireInStock(cart.getBook(), quantity);
         cart.setQuantity(quantity);
         cartRepository.save(cart);
         return convertToDTO(cart);
@@ -73,6 +69,19 @@ public class CartService {
         cartRepository.deleteAll(carts);
     }
 
+    private static void requirePositive(Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
+        }
+    }
+
+    private static void requireInStock(Book book, int quantity) {
+        int stock = book.getStockQuantity() != null ? book.getStockQuantity() : 0;
+        if (quantity > stock) {
+            throw new IllegalArgumentException("Chỉ còn " + stock + " cuốn \"" + book.getTitle() + "\" trong kho");
+        }
+    }
+
     private CartDTO convertToDTO(Cart cart) {
         CartDTO dto = new CartDTO();
         dto.setId(cart.getId());
@@ -80,8 +89,9 @@ public class CartService {
         dto.setBookTitle(cart.getBook().getTitle());
         dto.setBookThumbnail(cart.getBook().getThumbnail());
         dto.setQuantity(cart.getQuantity());
-        dto.setPrice(cart.getBook().getListPrice());
-        dto.setSubtotal(cart.getBook().getListPrice() * cart.getQuantity());
+        Float price = cart.getBook().resolveEffectivePrice();
+        dto.setPrice(price);
+        dto.setSubtotal(price * cart.getQuantity());
         dto.setAddedAt(cart.getAddedAt());
         return dto;
     }

@@ -105,6 +105,16 @@ public class Book {
     @Column(name = "is_flash_sale")
     private Boolean isFlashSale = false;
 
+    /** Giá bán thực tế: giá flash sale nếu đang diễn ra, ngược lại giá niêm yết. */
+    public Float resolveEffectivePrice() {
+        boolean activeFlashSale = Boolean.TRUE.equals(isFlashSale)
+                && flashSalePrice != null
+                && (flashSaleStartTime == null || !flashSaleStartTime.isAfter(LocalDateTime.now()))
+                && flashSaleEndTime != null
+                && flashSaleEndTime.isAfter(LocalDateTime.now());
+        return activeFlashSale ? flashSalePrice : listPrice;
+    }
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "book_categories",

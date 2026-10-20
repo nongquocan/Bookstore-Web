@@ -117,3 +117,5 @@ Backend-Java/result.txt
 # One-off local utility scripts (contain hardcoded local credentials)
 /BookCoverDownloader.java
 /BookCoverDownloader.class
+# Docker compose secrets
+.env
