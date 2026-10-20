@@ -30,11 +30,11 @@ public class SepayWebhookController {
         log.info("Received SePay Webhook: {}", payload);
 
         // Xác thực API Token từ SePay
-        if (sepayWebhookToken != null && !sepayWebhookToken.isBlank()) {
-            if (authorizationHeader == null || !authorizationHeader.equals("Apikey " + sepayWebhookToken)) {
-                log.warn("Unauthorized webhook request. Invalid or missing Authorization header.");
-                return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
-            }
+        // Fail-closed: chưa cấu hình token thì từ chối, tránh ai cũng có thể giả webhook xác nhận thanh toán
+        if (sepayWebhookToken == null || sepayWebhookToken.isBlank()
+                || authorizationHeader == null || !authorizationHeader.equals("Apikey " + sepayWebhookToken)) {
+            log.warn("Unauthorized webhook request. Invalid or missing Authorization header.");
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
         }
 
         // SePay gửi transferType = "in" cho giao dịch nhận tiền

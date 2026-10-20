@@ -4,6 +4,7 @@ import com.bookstore.entity.Voucher;
 import com.bookstore.repository.VoucherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,31 +43,46 @@ public class VoucherService {
 
     public Voucher validateVoucher(String code, Double orderTotal) {
         Voucher voucher = voucherRepository.findByCode(code.toUpperCase())
-                .orElseThrow(() -> new RuntimeException("Mã giảm giá không tồn tại"));
+                .orElseThrow(() -> new IllegalArgumentException("Mã giảm giá không tồn tại"));
 
         if (!voucher.isActive()) {
-            throw new RuntimeException("Mã giảm giá đã bị khóa");
+            throw new IllegalArgumentException("Mã giảm giá đã bị khóa");
         }
 
         if (voucher.getExpiryDate() != null && voucher.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Mã giảm giá đã hết hạn");
+            throw new IllegalArgumentException("Mã giảm giá đã hết hạn");
         }
 
         if (voucher.getUsageLimit() > 0 && voucher.getUsedCount() >= voucher.getUsageLimit()) {
-            throw new RuntimeException("Mã giảm giá đã hết lượt sử dụng");
+            throw new IllegalArgumentException("Mã giảm giá đã hết lượt sử dụng");
         }
 
         if (voucher.getMinOrderValue() != null && orderTotal < voucher.getMinOrderValue()) {
-            throw new RuntimeException("Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã này");
+            throw new IllegalArgumentException("Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã này");
         }
 
         return voucher;
     }
 
-    public void incrementUsedCount(String code) {
-        voucherRepository.findByCode(code).ifPresent(voucher -> {
-            voucher.setUsedCount(voucher.getUsedCount() + 1);
-            voucherRepository.save(voucher);
-        });
+    /**
+     * Dùng voucher cho một đơn hàng: kiểm tra điều kiện rồi tăng lượt dùng nguyên tử.
+     * Ném lỗi nếu voucher không hợp lệ hoặc đã hết lượt (kể cả khi bị tranh chấp đồng thời).
+     * Phải gọi trong transaction của đơn hàng để rollback cùng đơn.
+     */
+    @Transactional
+    public Voucher redeemVoucher(String code, double subtotal) {
+        Voucher voucher = validateVoucher(code, subtotal);
+        if (voucherRepository.incrementUsedCountIfAvailable(voucher.getCode()) == 0) {
+            throw new IllegalArgumentException("Mã giảm giá đã hết lượt sử dụng");
+        }
+        return voucher;
+    }
+
+    /** Hoàn lượt dùng khi đơn bị huỷ. */
+    @Transactional
+    public void releaseVoucher(String code) {
+        if (code != null && !code.isBlank()) {
+            voucherRepository.decrementUsedCount(code);
+        }
     }
 }

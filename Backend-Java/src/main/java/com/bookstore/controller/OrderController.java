@@ -91,6 +91,7 @@ public class OrderController {
     }
 
     // ─── Admin cập nhật trạng thái đơn hàng ─────────────────────────────
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{orderId}/status")
     public ResponseEntity<ApiResponse<OrderDTO>> updateOrderStatus(
             @PathVariable Long orderId,

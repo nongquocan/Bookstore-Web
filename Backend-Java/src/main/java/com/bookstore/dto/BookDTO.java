@@ -89,11 +89,7 @@ public class BookDTO {
         dto.setFlashSaleEndTime(book.getFlashSaleEndTime());
         dto.setIsFlashSale(book.getIsFlashSale());
         // Tính giá hiệu quả
-        boolean activeFlashSale = Boolean.TRUE.equals(book.getIsFlashSale())
-                && book.getFlashSalePrice() != null
-                && book.getFlashSaleEndTime() != null
-                && book.getFlashSaleEndTime().isAfter(LocalDateTime.now());
-        dto.setEffectivePrice(activeFlashSale ? book.getFlashSalePrice() : book.getListPrice());
+        dto.setEffectivePrice(book.resolveEffectivePrice());
         return dto;
     }
 }
