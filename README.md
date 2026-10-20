@@ -5,7 +5,7 @@ Website bán sách trực tuyến gồm hai phần tách biệt: backend REST AP
 ## Công nghệ sử dụng
 
 **Backend** (`Backend-Java/`)
-- Java 21, Spring Boot 3.2.3
+- Java 25, Spring Boot 4.1.1
 - Spring Web, Spring Data JPA, MySQL
 - Spring Security + JWT (đăng nhập/phân quyền)
 - Spring Mail (gửi OTP xác thực qua email)
@@ -48,7 +48,7 @@ Web-site/
 
 ## Yêu cầu môi trường
 
-- JDK 21
+- JDK 25
 - Maven 3.9+
 - MySQL 8
 

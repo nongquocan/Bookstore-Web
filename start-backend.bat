@@ -1,9 +1,22 @@
 @echo off
+
+set "PATH=%JAVA_HOME%\bin;%PATH%"
+
+set "PATH=%JAVA_HOME%in;%PATH%"
+
 echo Checking port 8080...
+
 for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8080 " ^| findstr "LISTENING"') do (
+
     echo Killing process %%a on port 8080...
+
     taskkill /PID %%a /F >nul 2>&1
+
 )
+
 echo Starting Spring Boot...
+
 cd /d "D:\Web-site\Backend-Java"
+
 mvn spring-boot:run
+
